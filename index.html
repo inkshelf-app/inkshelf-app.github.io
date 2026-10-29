@@ -1016,19 +1016,21 @@
 (function () {
   const Ink = (window.Ink = window.Ink || {});
   const $ = (s) => document.querySelector(s);
-  const LABEL = { plan: "Plan", reading: "Reading", completed: "Completed" };
+  const LABEL = { all: "All", plan: "Plan", reading: "Reading", completed: "Completed" };
+  const TABS = ["all"].concat(Ink.store.STATUSES);
+  const inTabOf = (it) => state.tab === "all" || it.status === state.tab;
   const PREFS = "inkshelf.prefs";
 
   const KINDS = ["all", "manhwa", "lightnovel"];
   const SORTS = ["newest", "recent", "title", "progress"];
   const KIND_TXT = { all: "series", manhwa: "manhwa", lightnovel: "light novels" };
-  const state = { tab: "reading", kind: "all", sorts: { plan: "recent", reading: "newest", completed: "recent" }, filter: "" };
+  const state = { tab: "reading", kind: "all", sorts: { all: "recent", plan: "recent", reading: "newest", completed: "recent" }, filter: "" };
   try {
     const saved = JSON.parse(localStorage.getItem(PREFS) || "{}") || {};
-    if (Ink.store.STATUSES.includes(saved.tab)) state.tab = saved.tab;
+    if (TABS.includes(saved.tab)) state.tab = saved.tab;
     if (KINDS.includes(saved.kind)) state.kind = saved.kind;
     if (saved.sorts && typeof saved.sorts === "object")
-      Ink.store.STATUSES.forEach((s) => {
+      TABS.forEach((s) => {
         if (SORTS.includes(saved.sorts[s])) state.sorts[s] = saved.sorts[s];
       });
   } catch (e) {}
@@ -1075,9 +1077,9 @@
   function visible() {
     const f = Ink.api.norm(state.filter);
     const all = Ink.store.getAll();
-    const inTab = all.filter((it) => it.status === state.tab);
+    const inTab = all.filter(inTabOf);
     const byKind = all.filter((it) => state.kind === "all" || it.kind === state.kind);
-    let list = byKind.filter((it) => it.status === state.tab);
+    let list = byKind.filter(inTabOf);
     if (f) list = list.filter((it) => [it.data.title].concat(it.data.alt || []).some((t) => Ink.api.norm(t).includes(f)));
     const recent = (a, b) => b.updated_at - a.updated_at;
     const cmp = {
@@ -1139,10 +1141,10 @@
     const esc = Ink.ui.esc;
     const { list, byKind, inTab, all } = visible();
     const n = Ink.ui.num;
-    const cnt = (s) => byKind.filter((it) => it.status === s).length;
+    const cnt = (s) => byKind.filter((it) => s === "all" || it.status === s).length;
 
     $("#lib-count").textContent = `${n(all.length)} series`;
-    $("#lib-tabs").innerHTML = Ink.store.STATUSES.map((s) => {
+    $("#lib-tabs").innerHTML = TABS.map((s) => {
       const on = state.tab === s;
       return `<button class="x-tab" type="button" role="tab" id="lib-tab-${s}" aria-controls="lib-grid" data-tab="${s}" aria-selected="${on}" tabindex="${on ? 0 : -1}" aria-label="${LABEL[s]}, ${n(cnt(s))} ${state.kind === "all" ? "series" : KIND_TXT[state.kind]}">${LABEL[s]}<em aria-hidden="true">${n(cnt(s))}</em></button>`;
     }).join("");
@@ -1321,7 +1323,7 @@
       const keys = { ArrowRight: 1, ArrowLeft: -1, Home: "first", End: "last" };
       if (!(e.key in keys) || !e.target.closest("[data-tab]")) return;
       e.preventDefault();
-      const S = Ink.store.STATUSES;
+      const S = TABS;
       const i = S.indexOf(state.tab);
       const k = keys[e.key];
       state.tab = k === "first" ? S[0] : k === "last" ? S[S.length - 1] : S[(i + k + S.length) % S.length];
