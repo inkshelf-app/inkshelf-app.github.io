@@ -425,7 +425,22 @@
       .x-stats > *, .x-stats__pair > *, .x-sx-hero > * { min-width: 0; }
       @media (min-width: 900px) { .x-stats__pair { grid-template-columns: 1fr 1fr; } }
       .x-sx-hero { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      @media (min-width: 900px) { .x-sx-hero { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+      .x-sx-hero[data-cols="1"] { grid-template-columns: 1fr; }
+      @media (min-width: 900px) {
+        .x-sx-hero[data-cols="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .x-sx-hero[data-cols="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      }
+      .x-stats__pair > :only-child { grid-column: 1 / -1; }
+      .x-sx-filters { padding: 12px 16px; display: grid; gap: 10px; }
+      .x-sx-frow { display: flex; align-items: center; gap: 12px; min-width: 0; }
+      .x-sx-flabel { flex: none; width: 44px; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--txt-2); }
+      .x-sx-chips { display: flex; gap: 6px; flex-wrap: wrap; min-width: 0; }
+      .x-sx-tog[aria-pressed="false"] { opacity: 0.75; text-decoration: line-through; }
+      .x-sx-none { margin: 8px 0; font-size: 13px; color: var(--txt-2); text-align: center; }
+      @media (max-width: 519px) {
+        .x-sx-frow { align-items: flex-start; }
+        .x-sx-flabel { padding-top: 12px; }
+      }
       .x-sx-tile {
         position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 2px;
         padding: 14px 16px 16px; border-radius: 14px; border: 1px solid var(--line);
@@ -1928,16 +1943,57 @@
   const tile = (label, value, sub, acc) =>
     `<div class="x-sx-tile" style="--acc:${acc}"><span class="x-sx-tile__l">${label}</span><b class="x-sx-tile__v">${value}</b><span class="x-sx-tile__s">${sub}</span></div>`;
 
+  /* ---------- view filters (saved on this device) ---------- */
+  const VIEW_KEY = "inkshelf.statsView";
+  const KINDS = [
+    { k: "all", label: "Everything" },
+    { k: "manhwa", label: "Manhwa" },
+    { k: "lightnovel", label: "Light novels" },
+  ];
+  const SECTIONS = [
+    { s: "series", label: "Series" },
+    { s: "chapters", label: "Chapters" },
+    { s: "completed", label: "Completed" },
+    { s: "new", label: "New chapters" },
+    { s: "breakdown", label: "Breakdown" },
+    { s: "closest", label: "Closest to finishing" },
+  ];
+  const view = { kind: "all", hide: [] };
+  try {
+    const v = JSON.parse(localStorage.getItem(VIEW_KEY) || "{}");
+    if (KINDS.some((x) => x.k === v.kind)) view.kind = v.kind;
+    if (Array.isArray(v.hide)) view.hide = v.hide.filter((h) => SECTIONS.some((x) => x.s === h));
+  } catch (e) {}
+  const saveView = () => {
+    try {
+      localStorage.setItem(VIEW_KEY, JSON.stringify(view));
+    } catch (e) {}
+  };
+  const shown = (s) => !view.hide.includes(s) && !(s === "new" && view.kind === "lightnovel");
+
+  function filters() {
+    const kinds = KINDS.map((x) => `<button type="button" class="x-chip" data-skind="${x.k}" aria-pressed="${view.kind === x.k}">${x.label}</button>`).join("");
+    const secs = SECTIONS.filter((x) => !(x.s === "new" && view.kind === "lightnovel"))
+      .map((x) => `<button type="button" class="x-chip x-sx-tog" data-ssec="${x.s}" aria-pressed="${!view.hide.includes(x.s)}">${x.label}</button>`)
+      .join("");
+    return `<div class="x-panel x-sx-filters">
+  <div class="x-sx-frow"><span class="x-sx-flabel">Type</span><div class="x-sx-chips" role="group" aria-label="Type">${kinds}</div></div>
+  <div class="x-sx-frow"><span class="x-sx-flabel">Show</span><div class="x-sx-chips" role="group" aria-label="Sections to show">${secs}</div></div>
+</div>`;
+  }
+
   function hero(all) {
     const n = Ink.ui.num;
     const f = figures(all);
     const done = f.total ? Math.round((f.by.completed / f.total) * 100) : 0;
-    return `<div class="x-sx-hero">
-  ${tile("On your shelf", n(f.total), `${n(f.by.reading)} reading now`, "var(--red)")}
-  ${tile("Chapters read", n(f.chapters), f.volumes ? `${n(f.volumes)} volumes too` : "across every series", "var(--cyan-ink)")}
-  ${tile("Completed", n(f.by.completed), `${done}% of your shelf`, "#4c7cf3")}
-  ${tile("New chapters", n(f.waiting), f.waiting ? "waiting in Reading" : "you're all caught up", "var(--amber-ink)")}
-</div>`;
+    const what = view.kind === "manhwa" ? "manhwa" : view.kind === "lightnovel" ? "light novel" : "";
+    const tiles = [
+      shown("series") && tile(what ? `${what} series` : "On your shelf", n(f.total), `${n(f.by.reading)} reading now`, "var(--red)"),
+      shown("chapters") && tile(what ? `${what} chapters` : "Chapters read", n(f.chapters), f.volumes ? `${n(f.volumes)} volumes too` : what ? "chapters read" : "across every series", view.kind === "lightnovel" ? "var(--amber-ink)" : "var(--cyan-ink)"),
+      shown("completed") && tile("Completed", n(f.by.completed), `${done}% of ${what ? "these" : "your shelf"}`, "#4c7cf3"),
+      shown("new") && tile("New chapters", n(f.waiting), f.waiting ? "waiting in Reading" : "you're all caught up", "var(--amber-ink)"),
+    ].filter(Boolean);
+    return tiles.length ? `<div class="x-sx-hero" data-cols="${tiles.length}">${tiles.join("")}</div>` : "";
   }
 
   function donut(f) {
@@ -2005,13 +2061,30 @@
   function render() {
     const out = $("#stats-out");
     if (!out) return;
-    const all = Ink.store.getAll();
-    out.innerHTML = `${hero(all)}<div class="x-stats__pair">${PANELS.map((p) => panel(p, all)).join("")}</div>${closest(all)}`;
+    const every = Ink.store.getAll();
+    const all = view.kind === "all" ? every : every.filter((it) => it.kind === view.kind);
+    const panels = shown("breakdown") ? PANELS.filter((p) => view.kind === "all" || p.kind === view.kind).map((p) => panel(p, all)).join("") : "";
+    const body = `${hero(all)}${panels ? `<div class="x-stats__pair">${panels}</div>` : ""}${shown("closest") ? closest(all) : ""}`;
+    out.innerHTML = filters() + (body || `<p class="x-sx-none">Everything is hidden. Turn a section back on above.</p>`);
   }
 
   Ink.stats = {
     init() {
       $("#stats-out").addEventListener("click", (e) => {
+        const kb = e.target.closest("[data-skind]");
+        const sb = e.target.closest("[data-ssec]");
+        if (kb || sb) {
+          if (kb) view.kind = kb.dataset.skind;
+          else {
+            const s = sb.dataset.ssec;
+            view.hide = view.hide.includes(s) ? view.hide.filter((h) => h !== s) : view.hide.concat(s);
+          }
+          saveView();
+          render();
+          const again = document.querySelector(kb ? `[data-skind="${kb.dataset.skind}"]` : `[data-ssec="${sb.dataset.ssec}"]`);
+          if (again) again.focus();
+          return;
+        }
         const b = e.target.closest("[data-find]");
         if (!b) return;
         Ink.search.setKind(b.dataset.find);
