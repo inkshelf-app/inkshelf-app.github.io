@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>INKSHELF — Manhwa &amp; Light Novel Tracker</title>
+    <title>INKSHELF · Manhwa &amp; Light Novel Tracker</title>
     <meta name="theme-color" content="#0a0a0b" />
     <link
       rel="icon"
@@ -348,6 +348,59 @@
       .x-syncbar span { flex: 1 1 200px; }
       .x-syncbar .x-link { min-height: var(--tap); padding: 0 6px; }
       .x-syncbar .x-link.is-quiet { color: var(--txt-3); }
+      /* covers: fixed shape, title tile fallback */
+      .x-card__media img, .x-row__cover img { display: block; aspect-ratio: 2 / 3; }
+      .x-tile {
+        position: absolute; inset: 0; display: grid; place-items: center; padding: 10px; text-align: center; overflow: hidden;
+        background: linear-gradient(160deg, color-mix(in srgb, var(--c, var(--red)) 38%, var(--ink-3)), var(--ink-3) 85%);
+        font-family: "Bebas Neue", Impact, sans-serif; font-size: 22px; letter-spacing: 0.04em; line-height: 1.05;
+        color: var(--txt); overflow-wrap: anywhere;
+      }
+      .x-tile span { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+      .x-row__cover .x-tile { font-size: 13px; padding: 4px; }
+      .x-sheet__cover .x-tile { font-size: 16px; padding: 6px; }
+
+      /* search rows: status and shelf pills, skeletons */
+      .x-row__flags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+      .x-stp { font-size: 12px; line-height: 1.4; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--txt-2); white-space: nowrap; }
+      .x-stp::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 5px; vertical-align: 1px; }
+      .x-stp.is-on { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 45%, transparent); }
+      .x-stp.is-done { color: var(--txt); }
+      .x-stp.is-hold { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 45%, transparent); }
+      .x-stp.is-off { color: #ff7a83; border-color: color-mix(in srgb, #ff7a83 45%, transparent); }
+      .x-stp.is-shelf { background: #c42532; border-color: #c42532; color: #fff; font-weight: 600; }
+      .x-stp.is-shelf::before { display: none; }
+      .x-row--skel { pointer-events: none; }
+      .x-row--skel:hover { transform: none; border-color: var(--line); }
+      .x-row__cover.x-skel { border-radius: 9px; }
+      .x-skel--line { display: block; max-width: 100%; border-radius: 6px; }
+      .x-retry { min-height: var(--tap); padding: 0 8px; }
+
+      /* detail sheet: banner or blurred cover, never an empty header */
+      .x-sheet__banner { overflow: hidden; background: color-mix(in srgb, var(--tint, var(--red)) 28%, var(--ink-2)); }
+      .x-sheet__blur { position: absolute; inset: -30px; background-size: cover; background-position: center; filter: blur(20px) brightness(0.5) saturate(1.2); }
+      .x-sheet__bannerimg { position: absolute; inset: 0; }
+      .x-sheet__head { display: flex; gap: 14px; align-items: flex-end; margin-top: -64px; position: relative; z-index: 2; }
+      .x-sheet__cover { position: relative; flex: 0 0 92px; width: 92px; aspect-ratio: 2 / 3; border-radius: 10px; overflow: hidden; border: 1px solid var(--line-2); background: var(--ink-3); }
+      .x-sheet__cover img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+      /* shelf cards: new-chapter badge, big Continue */
+      .x-new { position: absolute; left: 8px; bottom: 8px; z-index: 2; font-size: 12px; font-weight: 700; padding: 3px 7px; border-radius: 5px; background: #c42532; color: #fff; }
+      .x-new b { text-transform: uppercase; letter-spacing: 0.12em; margin-right: 3px; }
+      .x-continue {
+        width: 100%; min-height: var(--tap); border-radius: 10px;
+        border: 1px solid var(--glow, var(--red)); background: color-mix(in srgb, var(--glow, var(--red)) 22%, var(--ink-3)); color: var(--txt);
+        font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+        transition: background var(--dur) var(--ease), transform 120ms var(--ease);
+      }
+      .x-continue:hover { background: color-mix(in srgb, var(--glow, var(--red)) 34%, var(--ink-3)); }
+      .x-continue:active { transform: scale(0.98); }
+      @media (max-width: 619px) {
+        .x-continue { min-height: 52px; font-size: 13px; }
+        .x-step { width: var(--tap); height: var(--tap); }
+        .x-num { min-height: var(--tap); }
+        .x-mini { min-height: var(--tap); }
+      }
       [hidden] { display: none !important; }
       .x-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       @media (prefers-reduced-motion: reduce) {
@@ -396,7 +449,7 @@
           <label class="x-sr" for="lib-sort">Sort</label>
           <select class="x-select" id="lib-sort">
             <option value="recent">Recently updated</option>
-            <option value="title">Title A–Z</option>
+            <option value="title">Title A to Z</option>
             <option value="progress">Progress</option>
           </select>
         </div>
@@ -419,7 +472,7 @@
           <div class="x-searchrow">
             <div class="x-field">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-              <input class="x-input" id="q" type="search" placeholder="Search a series — try “Omniscient Reader”" autocomplete="off" />
+              <input class="x-input" id="q" type="search" placeholder="Search a series, e.g. “Omniscient Reader”" autocomplete="off" />
             </div>
             <div class="x-seg is-cyan" id="kind-seg" role="group" aria-label="Series type">
               <button type="button" data-kind="manhwa" aria-pressed="true">Manhwa</button>
@@ -632,34 +685,42 @@
   };
 })();
 /* ============ INKSHELF · api.js ============
-   Every lookup goes through the app's own Supabase backend
-   (Postgres RPCs, live server-side search, nothing stored):
-     search_series  {q, kind}  → {mu:[...], al:[...], errors:[...]}
-     series_details {mu_id}    → one MangaUpdates series in full
-   MangaUpdates is primary; AniList entries are matched onto it by
-   title for covers, colors and counts. Results are already filtered to
-   the chosen kind server-side, and are never widened to the other kind. */
+   One backend endpoint, the inkshelf edge function:
+     GET BASE?action=search&q=..&kind=manhwa|lightnovel  → {results:[...], errors:[]}
+     GET BASE?action=details&mu_id=..&force=1             → one series, same fields
+   Results arrive as full details, relevance-filtered, strictly the chosen
+   kind, in server order. Searches are cached for 6 hours (memory and
+   localStorage, 60 entries, least recently used dropped first). */
 (function () {
   const Ink = (window.Ink = window.Ink || {});
   const CONFIG = (Ink.CONFIG = Ink.CONFIG || {
     SUPABASE_URL: "https://dqrbdwahwetzramtyznw.supabase.co",
     SUPABASE_KEY: "sb_publishable_odBpCQOBmT1YY3j8o903ZA_kTPtUQW2",
   });
-  const TIMEOUT = 12000;
-  const CACHE_KEY = "inkshelf.search.v2";
+  const BASE = CONFIG.SUPABASE_URL + "/functions/v1/inkshelf";
+  const TIMEOUT = 15000;
+  const CACHE_KEY = "inkshelf.search.v3";
+  const TTL = 6 * 3600 * 1000;
+  const MAX = 60;
+
+  /* localStorage with try/catch and an in-memory fallback */
+  const memStore = {};
+  const safeStorage = {
+    getItem(k) { try { const v = window.localStorage.getItem(k); return v == null ? (k in memStore ? memStore[k] : null) : v; } catch (e) { return k in memStore ? memStore[k] : null; } },
+    setItem(k, v) { memStore[k] = String(v); try { window.localStorage.setItem(k, String(v)); } catch (e) {} },
+    removeItem(k) { delete memStore[k]; try { window.localStorage.removeItem(k); } catch (e) {} },
+  };
 
   /* ---------- transport ---------- */
-  function rpc(name, body, outer) {
+  function get(params, outer) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), TIMEOUT);
     const onOuter = () => ctrl.abort();
-    if (outer) outer.addEventListener("abort", onOuter);
-    return fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/${name}`, {
-      method: "POST",
-      headers: { apikey: CONFIG.SUPABASE_KEY, "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(body),
-      signal: ctrl.signal,
-    })
+    if (outer) {
+      if (outer.aborted) ctrl.abort();
+      outer.addEventListener("abort", onOuter);
+    }
+    return fetch(BASE + "?" + new URLSearchParams(params).toString(), { signal: ctrl.signal })
       .then((r) => {
         if (!r.ok) throw new Error("HTTP " + r.status);
         return r.json();
@@ -687,147 +748,15 @@
       .replace(/\s*\((?:light\s+)?novel\)/gi, "")
       .trim();
 
-  const decode = (s) =>
-    s
-      .replace(/&quot;/g, '"')
-      .replace(/&#0?39;|&apos;/g, "'")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&nbsp;/g, " ")
-      .replace(/&amp;/g, "&");
-
-  /** Plain text: no HTML, no markdown or BBCode links, no "Original Novel:" links block. */
-  function cleanDesc(s) {
-    let t = String(s || "")
-      .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<\/p>/gi, "\n\n");
-    const cut = t.search(/(?:\*\*|__|<b>|\[b\])?\s*original\s+(?:web\s*)?novels?\s*:/i);
-    if (cut > 0) t = t.slice(0, cut);
-    t = t
-      .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
-      .replace(/\[([^\]]+)\]\((?:https?:)?[^)]*\)/g, "$1")
-      .replace(/\[url=[^\]]*\]([\s\S]*?)\[\/url\]/gi, "$1")
-      .replace(/\[\/?[a-z]+(?:=[^\]]*)?\]/gi, "")
-      .replace(/<[^>]+>/g, "")
-      .replace(/(\*\*|__)(.*?)\1/g, "$2")
-      .replace(/https?:\/\/\S+/g, "");
-    return decode(t)
-      .replace(/[ \t]+\n/g, "\n")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
-  }
-
-  function bigrams(s) {
-    const out = new Map();
-    for (let i = 0; i < s.length - 1; i++) {
-      const g = s.slice(i, i + 2);
-      out.set(g, (out.get(g) || 0) + 1);
-    }
-    return out;
-  }
-  function dice(a, b) {
-    if (!a || !b) return 0;
-    if (a === b) return 1;
-    const A = bigrams(a);
-    const B = bigrams(b);
-    let hit = 0;
-    A.forEach((n, g) => (hit += Math.min(n, B.get(g) || 0)));
-    return (2 * hit) / (Math.max(1, a.length - 1) + Math.max(1, b.length - 1));
-  }
-  function titleScore(q, t) {
-    const a = norm(q);
-    const b = norm(t);
-    if (!a || !b) return 0;
-    if (a === b) return 100;
-    if (b.startsWith(a)) return 88;
-    if (b.includes(a)) return 76;
-    const qt = a.split(" ");
-    const tt = new Set(b.split(" "));
-    const overlap = qt.filter((w) => tt.has(w)).length / qt.length;
-    return Math.max(overlap * 65, dice(a.replace(/ /g, ""), b.replace(/ /g, "")) * 70);
-  }
-
   /** Strip subtitles, season tags and filler so a long title can still match. */
   function simplify(q) {
-    let s = String(q).split(/[:\-–—|(\[]/)[0];
+    let s = String(q).split(/[:\-\u2013\u2014|(\[]/)[0];
     s = s.replace(/\b(season|part|vol(ume)?|s)\s*\d+\b/gi, " ").replace(/\b(the|a|an|novel|manhwa|webtoon|ln)\b/gi, " ");
     s = norm(s).replace(/\s+/g, " ").trim();
     return s.length >= 2 ? s : norm(q);
   }
 
-  const uniq = (list) => {
-    const seen = new Set();
-    return list.filter((t) => {
-      const k = norm(t);
-      if (!t || !k || seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
-  };
-
-  /* ---------- sources ---------- */
-  function fromMU(m, kind) {
-    const title = cleanTitle(m.title);
-    const hit = cleanTitle(m.hit_title);
-    const rating = Number(m.rating);
-    return {
-      source: "mangaupdates",
-      muId: String(m.mu_id),
-      anilistId: null,
-      malId: null,
-      title,
-      sub: hit && norm(hit) !== norm(title) ? hit : "",
-      alt: uniq([title, hit]),
-      cover: m.cover || "",
-      color: "",
-      banner: "",
-      kind,
-      format: m.type === "Novel" ? "NOVEL" : m.type ? String(m.type).toUpperCase() : "",
-      country: m.type === "Manhwa" ? "KR" : "",
-      status: "",
-      chapters: null,
-      volumes: null,
-      lastChapter: null,
-      score: rating > 0 ? Math.round(rating * 10) : null,
-      votes: Number(m.votes) || 0,
-      genres: m.genres || [],
-      desc: cleanDesc(m.description),
-      url: m.url || "",
-      year: Number(m.year) || null,
-    };
-  }
-
-  function fromAniList(m, kind) {
-    const t = m.title || {};
-    const title = cleanTitle(t.english || t.romaji || t.native);
-    return {
-      source: "anilist",
-      muId: null,
-      anilistId: m.id,
-      malId: m.idMal || null,
-      title,
-      sub: "",
-      alt: uniq([title, t.romaji, t.english, t.native].concat(m.synonyms || []).map(cleanTitle)),
-      cover: (m.coverImage && m.coverImage.extraLarge) || "",
-      color: (m.coverImage && m.coverImage.color) || "",
-      banner: m.bannerImage || "",
-      kind,
-      format: m.format || "",
-      country: m.countryOfOrigin || "",
-      status: m.status || "",
-      chapters: m.chapters || null,
-      volumes: m.volumes || null,
-      lastChapter: null,
-      score: m.averageScore || null,
-      votes: 0,
-      genres: m.genres || [],
-      desc: "",
-      url: m.siteUrl || "",
-      year: (m.startDate && m.startDate.year) || null,
-    };
-  }
-
-  /* ---------- merge, rank ---------- */
+  /* ---------- keys ---------- */
   function keyOf(r) {
     if (r.muId) return "mu:" + r.muId;
     if (r.anilistId) return "anilist:" + r.anilistId;
@@ -846,229 +775,187 @@
     return Array.from(new Set(out));
   }
 
-  function merge(mu, al) {
-    const out = mu.map((r) => Object.assign({ sources: ["mangaupdates"] }, r));
-    al.forEach((a) => {
-      const titles = new Set(a.alt.map(norm).filter((t) => t.length > 1));
-      const hit = out.find((o) => !o.anilistId && o.muId && o.alt.some((t) => titles.has(norm(t))));
-      if (!hit) {
-        // Same title as an entry already shown: it's a duplicate listing, skip it.
-        if (out.some((o) => o.alt.some((t) => titles.has(norm(t))))) return;
-        out.push(Object.assign({ sources: ["anilist"] }, a));
-        return;
-      }
-      hit.anilistId = a.anilistId;
-      hit.malId = a.malId;
-      if (a.cover) hit.cover = a.cover;
-      hit.color = a.color || hit.color;
-      hit.banner = a.banner || hit.banner;
-      hit.chapters = a.chapters || hit.chapters;
-      hit.volumes = a.volumes || hit.volumes;
-      hit.score = a.score || hit.score;
-      hit.status = a.status || hit.status;
-      hit.year = hit.year || a.year;
-      if (!hit.genres.length) hit.genres = a.genres;
-      hit.alt = uniq(hit.alt.concat(a.alt));
-      hit.sources.push("anilist");
-    });
-    out.forEach((r) => (r.item_key = keyOf(r)));
+  /* ---------- server row → client shape ---------- */
+  const num = (v) => {
+    if (v == null || v === "") return null;
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+
+  function fromServer(r) {
+    r = r || {};
+    const muId = r.mu_id != null && r.mu_id !== "" ? String(r.mu_id) : null;
+    const anilistId = r.anilist_id || null;
+    const total = num(r.total_chapters);
+    const latest = num(r.latest_chapter);
+    const vols = num(r.total_volumes);
+    const desc = String(r.description || "").slice(0, 1600);
+    const title = r.title || "";
+    const out = {
+      muId,
+      anilistId,
+      kind: r.kind === "lightnovel" ? "lightnovel" : "manhwa",
+      title,
+      sub: r.subtitle || "",
+      titleAlt: r.subtitle || "",
+      alt: (r.alt || []).filter((t) => t && t !== title).slice(0, 8),
+      description: desc,
+      desc,
+      cover: r.cover || "",
+      banner: r.banner || "",
+      color: /^#[0-9a-f]{3,8}$/i.test(r.color || "") ? r.color : "",
+      genres: (r.genres || []).slice(0, 8),
+      authors: (r.authors || []).slice(0, 6),
+      year: num(r.year),
+      status: r.status || "",
+      pubStatus: r.status || "",
+      totalChapters: total,
+      chapters: total,
+      latestChapter: latest,
+      lastChapter: latest,
+      totalVolumes: vols,
+      volumes: vols,
+      score: num(r.score),
+      url: r.url || "",
+      siteUrl: r.url || "",
+    };
+    out.item_key = r.item_key || keyOf(out);
     return out;
   }
 
-  function rank(list, q) {
-    list.forEach((r) => {
-      const best = Math.max(0, ...r.alt.concat(r.title, r.sub || "").map((t) => titleScore(q, t)));
-      r._match = best;
-      r._score =
-        best +
-        (r.muId ? 4 : 0) +
-        (r.sources.length > 1 ? 4 : 0) +
-        Math.min(6, Math.log10(1 + (r.votes || 0)) * 2) +
-        (r.score ? r.score / 25 : 0) -
-        Math.min(6, Math.max(0, norm(r.title).length - norm(q).length) / 10);
-    });
-    return list.sort((a, b) => b._score - a._score);
+  /** Saved covers get keep=1 so the backend holds on to a copy. */
+  function keepCover(url) {
+    if (!url || /[?&]keep=1\b/.test(url)) return url || "";
+    return url + (url.indexOf("?") >= 0 ? "&" : "?") + "keep=1";
   }
 
-  // Server already filters by kind; this only guards against stray rows.
-  const muFits = (m, kind) => !m.type || (kind === "lightnovel" ? m.type === "Novel" : m.type === "Manhwa");
-  const alFits = (m, kind) => !m.format || (kind === "lightnovel" ? m.format === "NOVEL" : m.format !== "NOVEL");
+  /** The data stored on a shelf item for a result. */
+  function toData(r) {
+    const d = Object.assign({}, r);
+    delete d.item_key;
+    delete d.kind;
+    d.cover = keepCover(r.cover);
+    d.refreshedAt = Date.now();
+    return d;
+  }
 
-  /* ---------- session cache ---------- */
+  /* ---------- cache: memory + storage, 6 h, LRU of 60 ---------- */
   const mem = new Map();
-  function cacheGet(k) {
-    if (mem.has(k)) return mem.get(k);
+  const readAll = () => {
     try {
-      const all = JSON.parse(sessionStorage.getItem(CACHE_KEY) || "{}");
-      if (all[k]) {
-        mem.set(k, all[k]);
-        return all[k];
-      }
+      return JSON.parse(safeStorage.getItem(CACHE_KEY) || "{}") || {};
+    } catch (e) {
+      return {};
+    }
+  };
+  function writeAll(all) {
+    const keys = Object.keys(all).sort((a, b) => (all[b].used || 0) - (all[a].used || 0));
+    keys.slice(MAX).forEach((k) => delete all[k]);
+    try {
+      safeStorage.setItem(CACHE_KEY, JSON.stringify(all));
     } catch (e) {}
-    return null;
+  }
+  const ckey = (q, kind) => kind + "|" + norm(q);
+
+  function cacheGet(k) {
+    let e = mem.get(k);
+    const all = readAll();
+    if (!e && all[k]) e = all[k];
+    if (!e) return null;
+    if (Date.now() - e.at > TTL) {
+      mem.delete(k);
+      delete all[k];
+      writeAll(all);
+      return null;
+    }
+    e.used = Date.now();
+    mem.delete(k);
+    mem.set(k, e);
+    all[k] = e;
+    writeAll(all);
+    return e.v;
   }
   function cacheSet(k, v) {
-    mem.set(k, v);
-    try {
-      const all = JSON.parse(sessionStorage.getItem(CACHE_KEY) || "{}");
-      all[k] = v;
-      const keys = Object.keys(all);
-      if (keys.length > 40) keys.slice(0, keys.length - 40).forEach((x) => delete all[x]);
-      sessionStorage.setItem(CACHE_KEY, JSON.stringify(all));
-    } catch (e) {}
+    const e = { at: Date.now(), used: Date.now(), v };
+    mem.delete(k);
+    mem.set(k, e);
+    while (mem.size > MAX) mem.delete(mem.keys().next().value);
+    const all = readAll();
+    all[k] = e;
+    writeAll(all);
+  }
+
+  /** Cached results for a query, or null. Used to paint instantly. */
+  function cached(q, kind) {
+    const v = cacheGet(ckey(q, kind));
+    return v ? v.map((r) => Object.assign({}, r)) : null;
   }
 
   async function once(q, kind, signal) {
-    const ck = kind + "|" + norm(q);
-    const hit = cacheGet(ck);
+    const k = ckey(q, kind);
+    const hit = cacheGet(k);
     if (hit) return { results: hit.map((r) => Object.assign({}, r)), errors: [] };
-    const json = (await rpc("search_series", { q, kind }, signal)) || {};
-    const mu = (json.mu || []).filter((m) => muFits(m, kind)).map((m) => fromMU(m, kind));
-    const al = (json.al || []).filter((m) => alFits(m, kind)).map((m) => fromAniList(m, kind));
-    const results = rank(merge(mu, al), q);
+    const json = (await get({ action: "search", q, kind }, signal)) || {};
+    const results = (json.results || []).map(fromServer);
     const errors = json.errors || [];
-    if (results.length || !errors.length) cacheSet(ck, results);
+    if (results.length || !errors.length) cacheSet(k, results);
     return { results, errors };
   }
 
   /**
-   * search(q, kind, {signal, onStage}) → {results, errors, stage}
-   * Stages: exact query → simplified query (only when the first is empty).
+   * search(q, kind, {signal}) → {results, errors, failed}
+   * Tries the query, then simplify(q) once if the first comes back empty.
+   * failed: the request failed, or reported errors with no results.
    */
   async function search(q, kind, opts) {
     const signal = opts && opts.signal;
-    const onStage = (opts && opts.onStage) || function () {};
-    const errs = new Set();
-    const stages = [
-      { q, name: "exact" },
-      { q: simplify(q), name: "simplified" },
-    ].filter((s, i, arr) => i === 0 || norm(s.q) !== norm(arr[0].q));
-    for (const st of stages) {
+    const tries = [q, simplify(q)].filter((s, i, arr) => i === 0 || norm(s) !== norm(arr[0]));
+    for (const t of tries) {
       if (signal && signal.aborted) throw abortErr();
-      onStage(st.name);
       let res;
       try {
-        res = await once(st.q, kind, signal);
+        res = await once(t, kind, signal);
       } catch (e) {
         if (signal && signal.aborted) throw abortErr();
-        errs.add("Search service");
-        return { results: [], errors: Array.from(errs), stage: st.name };
+        return { results: [], errors: ["request"], failed: true };
       }
-      res.errors.forEach((e) => errs.add(e));
-      if (res.results.length) return { results: res.results, errors: Array.from(errs), stage: st.name };
+      if (res.results.length) return { results: res.results, errors: res.errors, failed: false };
+      if (res.errors.length) return { results: [], errors: res.errors, failed: true };
     }
-    if (signal && signal.aborted) throw abortErr();
-    return { results: [], errors: Array.from(errs), stage: "done" };
+    return { results: [], errors: [], failed: false };
   }
 
   /* ---------- details ---------- */
-  function firstNum(line) {
-    const m = String(line || "").match(/\d[\d,]*(?:\.\d+)?/);
-    return m ? Number(m[0].replace(/,/g, "")) || null : null;
-  }
-
-  /** "2060 Chapters (Complete)\n96 Web-Volumes (Complete)" → totals and status */
-  function parseStatus(raw, completed) {
-    const lines = String(raw || "").split(/\r?\n/);
-    const ch = lines.find((l) => /chapter/i.test(l));
-    const vol = lines.find((l) => /volume/i.test(l));
-    const text = String(raw || "");
-    let pubStatus = "";
-    if (/complete/i.test(text) || completed === true) pubStatus = "FINISHED";
-    else if (/ongoing/i.test(text)) pubStatus = "RELEASING";
-    else if (/hiatus/i.test(text)) pubStatus = "HIATUS";
-    return {
-      totalChapters: ch && /complete/i.test(ch) ? firstNum(ch) : null,
-      totalVolumes: vol ? firstNum(vol) : null,
-      pubStatus,
-    };
-  }
-
-  const isAniListCover = (u) => /anili\.?st/i.test(String(u || ""));
-
-  /** series_details row → the data patch stored on a shelf item. */
-  function detailsToData(d, prev) {
-    prev = prev || {};
-    const title = cleanTitle(d.title) || prev.title;
-    const alt = uniq((d.alt || []).map(cleanTitle)).filter((t) => norm(t) !== norm(title));
-    const st = parseStatus(d.status_raw, d.completed);
-    const description = cleanDesc(d.description).slice(0, 1600);
-    const cover = isAniListCover(prev.cover) ? prev.cover : d.cover || prev.cover || "";
-    const latest = d.latest_chapter == null ? null : Number(d.latest_chapter) || null;
-    const rating = Number(d.rating);
-    const status = st.pubStatus || prev.pubStatus || prev.status || "";
-    return {
-      muId: String(d.mu_id),
-      title,
-      titleAlt: alt[0] || prev.titleAlt || "",
-      alt: uniq(alt.concat(prev.alt || [])).filter((t) => norm(t) !== norm(title)).slice(0, 8),
-      description,
-      desc: description || prev.desc || "",
-      cover,
-      genres: (d.genres && d.genres.length ? d.genres : prev.genres || []).slice(0, 8),
-      authors: d.authors || prev.authors || [],
-      latestChapter: latest,
-      lastChapter: latest,
-      totalChapters: st.totalChapters,
-      chapters: st.totalChapters || (st.pubStatus === "FINISHED" ? prev.chapters || null : null),
-      totalVolumes: st.totalVolumes,
-      volumes: st.totalVolumes || prev.volumes || null,
-      pubStatus: st.pubStatus,
-      status,
-      siteUrl: d.url || prev.siteUrl || "",
-      url: d.url || prev.url || "",
-      year: Number(d.year) || prev.year || null,
-      score: prev.score || (rating > 0 ? Math.round(rating * 10) : null),
-      format: prev.format || (d.type === "Novel" ? "NOVEL" : d.type ? String(d.type).toUpperCase() : ""),
-      color: prev.color || "",
-      banner: prev.banner || "",
-      anilistId: prev.anilistId || null,
-      malId: prev.malId || null,
-      sources: Array.from(new Set((prev.sources || []).concat("mangaupdates"))),
-      refreshedAt: Date.now(),
-    };
-  }
-
   async function details(muId) {
-    const d = await rpc("series_details", { mu_id: String(muId) });
-    const row = Array.isArray(d) ? d[0] : d;
-    if (!row || !row.mu_id) throw new Error("Series not found");
-    return row;
+    const json = await get({ action: "details", mu_id: String(muId), force: 1 });
+    const row = json && (json.result || (Array.isArray(json.results) && json.results[0]) || (json.title ? json : null));
+    if (!row || !row.title) throw new Error("Not found");
+    return fromServer(row);
   }
 
   /**
    * refresh(item) → Promise of a data patch for item.data.
-   * MangaUpdates items go straight to series_details. Older AniList-keyed
-   * items are looked up by title first to find their MangaUpdates id.
+   * Items with a MangaUpdates id go to details; older items without one
+   * are searched by title in their kind and take the first result.
    */
   async function refresh(item) {
     const data = (item && item.data) || {};
-    let muId = data.muId || (String(item.item_key || "").startsWith("mu:") ? item.item_key.slice(3) : null);
-    let found = null;
-    if (!muId) {
+    const muId = data.muId || (String(item.item_key || "").startsWith("mu:") ? item.item_key.slice(3) : null);
+    let fresh;
+    if (muId) fresh = await details(muId);
+    else {
       const res = await search(data.title || "", item.kind === "lightnovel" ? "lightnovel" : "manhwa");
-      found =
-        res.results.find((r) => data.anilistId && r.anilistId === data.anilistId) ||
-        res.results.find((r) => data.malId && r.malId === data.malId) ||
-        res.results.find((r) => r._match >= 95);
-      if (!found) {
-        if (res.errors.length) throw new Error("Search sources didn't respond");
-        throw new Error("Not found");
-      }
-      muId = found.muId;
+      if (res.failed) throw new Error("No response");
+      if (!res.results.length) throw new Error("Not found");
+      fresh = res.results[0];
     }
-    const prev = Object.assign({}, data);
-    if (found) {
-      if (found.cover && (!prev.cover || isAniListCover(found.cover))) prev.cover = found.cover;
-      ["color", "banner", "score", "anilistId", "malId"].forEach((k) => {
-        if (found[k]) prev[k] = found[k];
-      });
-    }
-    if (!muId) return Object.assign(prev, { status: found.status || prev.status, chapters: found.chapters || prev.chapters, volumes: found.volumes || prev.volumes, refreshedAt: Date.now() });
-    return detailsToData(await details(muId), prev);
+    const patch = toData(fresh);
+    if (!patch.cover) patch.cover = data.cover || "";
+    if (!patch.description) patch.description = patch.desc = data.description || data.desc || "";
+    return patch;
   }
 
-  Ink.api = { search, refresh, refreshById: (item) => refresh(item), details, detailsToData, simplify, titleScore, norm, keyOf, keysOf, cleanTitle, cleanDesc, parseStatus };
+  Ink.api = { search, cached, refresh, details, toData, keepCover, fromServer, simplify, norm, keyOf, keysOf, cleanTitle, safeStorage };
 })();
 /* ============ INKSHELF · ui-library.js ============
    The shelf: status tabs, kind chips, sort, filter, cards with
@@ -1133,23 +1020,27 @@
     const isLN = it.kind === "lightnovel";
     const short = unit === "volume" ? "Vol" : "Ch";
     const latest = latestOf(it);
+    const n = Ink.ui.num;
+    const v = valueOf(it);
     const st = pubOf(d) ? Ink.ui.fmtStatus(pubOf(d)) : "";
-    const meta = total
-      ? `${short} ${valueOf(it)} / ${total}${st ? " · " + st : ""}`
-      : latest
-      ? `${short} ${valueOf(it)} · latest ${latest}`
-      : `${short} ${valueOf(it)} · ${st || "Ongoing"}`;
+    const meta = total ? `${short} ${n(v)} / ${n(total)}` : latest ? `${short} ${n(v)} · latest ${n(latest)}` : `${short} ${n(v)} · ${st || "Ongoing"}`;
+    // New chapters since your progress, on Reading items tracked by chapter.
+    const latestChap = Number(d.latestChapter || d.lastChapter) || 0;
+    const fresh = it.status === "reading" && unit === "chapter" && latestChap > it.progress.chapter ? latestChap - it.progress.chapter : 0;
+    const canGo = it.status !== "completed" && !(total && v >= total);
     return `<article class="x-card" data-key="${esc(it.item_key)}" style="--glow:${c};background:linear-gradient(180deg,color-mix(in srgb,${c} 16%,var(--ink-2)),var(--ink-2) 62%)">
   <div class="x-card__media">
-    ${d.cover ? `<img src="${esc(d.cover)}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : `<div style="position:absolute;inset:0;display:grid;place-items:center;padding:10px;text-align:center" class="x-bebas">${esc(d.title)}</div>`}
+    ${Ink.ui.coverImg(d.cover, d.title, d.color, 200, 300)}
     <span class="x-badge ${isLN ? "is-ln" : "is-manhwa"}">${isLN ? "LN" : "Manhwa"}</span>
     ${d.score ? `<span class="x-score">★ ${d.score}%</span>` : ""}
+    ${fresh ? `<span class="x-new" aria-label="${n(fresh)} new chapters"><b>New</b> +${n(fresh)}</span>` : ""}
     <button class="x-card__open" data-act="open" aria-label="Details for ${esc(d.title)}"></button>
   </div>
   <div class="x-card__body">
     <div class="x-card__title" title="${esc(d.title)}">${esc(d.title)}</div>
     <div class="x-card__meta">${esc(meta)}${isLN ? ` · <button class="x-unit" data-act="unit" aria-label="Track by ${unit === "volume" ? "chapter" : "volume"}">by ${unit}</button>` : ""}</div>
     <div class="x-bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pctOf(it)}"><i style="width:${pctOf(it)}%"></i></div>
+    ${canGo ? `<button class="x-continue" data-act="inc" aria-label="${it.status === "plan" ? "Start" : "Continue"}: mark ${unit} ${n(v + 1)} read">${it.status === "plan" ? "Start" : "Continue"} · ${short} ${n(v + 1)}</button>` : ""}
     <div class="x-prog">
       <button class="x-step" data-act="dec" aria-label="Minus one ${unit}">−</button>
       <label class="x-num" style="display:flex;align-items:center"><span class="x-sr">Current ${unit}</span><input data-act="set" type="number" inputmode="numeric" min="0" value="${valueOf(it)}" /></label>
@@ -1169,9 +1060,9 @@
     const all = Ink.store.getAll();
     const cnt = (s) => byKind.filter((it) => it.status === s).length;
 
-    $("#lib-count").textContent = `${all.length} series`;
+    $("#lib-count").textContent = `${Ink.ui.num(all.length)} series`;
     $("#lib-tabs").innerHTML = Ink.store.STATUSES.map(
-      (s) => `<button class="x-tab" role="tab" data-tab="${s}" aria-selected="${state.tab === s}">${LABEL[s]}<em>${cnt(s)}</em></button>`
+      (s) => `<button class="x-tab" role="tab" data-tab="${s}" aria-selected="${state.tab === s}">${LABEL[s]}<em>${Ink.ui.num(cnt(s))}</em></button>`
     ).join("");
     const kc = { all: all.length, manhwa: all.filter((i) => i.kind === "manhwa").length, lightnovel: all.filter((i) => i.kind === "lightnovel").length };
     $("#lib-kind").innerHTML = [
@@ -1179,7 +1070,7 @@
       ["manhwa", "Manhwa"],
       ["lightnovel", "LN"],
     ]
-      .map(([k, l]) => `<button class="x-chip" data-kind="${k}" aria-pressed="${state.kind === k}">${l} · ${kc[k]}</button>`)
+      .map(([k, l]) => `<button class="x-chip" data-kind="${k}" aria-pressed="${state.kind === k}">${l} · ${Ink.ui.num(kc[k])}</button>`)
       .join("");
     $("#lib-sort").value = state.sort;
 
@@ -1251,7 +1142,7 @@
       const now = Ink.store.get(key);
       Ink.ui.toast(`Updated “${(now || it).data.title}”`);
     } catch (e) {
-      Ink.ui.toast(e && e.message === "Not found" ? `Couldn't find “${it.data.title}” in live search.` : "Search sources didn't respond — try again later.");
+      Ink.ui.toast(e && e.message === "Not found" ? `Couldn't find “${it.data.title}”. Try the Korean or romanized title.` : "Search didn't respond. Try again later.");
     }
   }
 
@@ -1366,12 +1257,15 @@
   };
 })();
 /* ============ INKSHELF · ui-search.js ============
-   Search box with Manhwa | Light novel toggle, debounced queries,
-   result rows and the detail sheet with add buttons. */
+   Search box with Manhwa | Light novel toggle, debounced queries
+   (2+ characters, 350 ms, in-flight requests cancelled), skeleton
+   rows, result rows and the detail sheet with add buttons. */
 (function () {
   const Ink = (window.Ink = window.Ink || {});
   const $ = (s) => document.querySelector(s);
   const PREF = "inkshelf.searchKind";
+  const MIN = 2;
+  const DEBOUNCE = 350;
 
   let kind = "manhwa";
   try {
@@ -1382,41 +1276,6 @@
   let results = [];
   let lastQ = "";
 
-  /** The subset of a result that is stored on a shelf item. */
-  function toData(r) {
-    const desc = (r.description || r.desc || "").slice(0, 1600);
-    return {
-      title: r.title,
-      titleAlt: r.titleAlt || r.sub || "",
-      alt: (r.alt || []).filter((t) => t !== r.title).slice(0, 8),
-      description: desc,
-      latestChapter: r.latestChapter || r.lastChapter || null,
-      totalChapters: r.totalChapters || null,
-      totalVolumes: r.totalVolumes || null,
-      pubStatus: r.pubStatus || "",
-      siteUrl: r.siteUrl || r.url || "",
-      muId: r.muId || null,
-      cover: r.cover || "",
-      color: r.color || "",
-      banner: r.banner || "",
-      format: r.format || "",
-      country: r.country || "",
-      status: r.status || "",
-      chapters: r.chapters || null,
-      volumes: r.volumes || null,
-      lastChapter: r.lastChapter || null,
-      score: r.score || null,
-      genres: (r.genres || []).slice(0, 8),
-      desc,
-      url: r.url || "",
-      year: r.year || null,
-      anilistId: r.anilistId || null,
-      malId: r.malId || null,
-      mdId: r.mdId || null,
-      sources: r.sources || [r.source].filter(Boolean),
-    };
-  }
-
   /** The shelf item for a result, under its new key or an older al:/mal: key. */
   function onShelf(r) {
     for (const k of Ink.api.keysOf(r)) {
@@ -1426,13 +1285,14 @@
     return null;
   }
 
-  const SRC = { mangaupdates: "MangaUpdates", anilist: "AniList", mangadex: "MangaDex", jikan: "Jikan" };
   const totalCh = (r) => r.totalChapters || r.chapters || null;
   const latestCh = (r) => r.latestChapter || r.lastChapter || null;
+  const vols = (r) => r.totalVolumes || r.volumes || null;
   const pub = (r) => r.pubStatus || r.status || "";
   const subOf = (r) => r.sub || r.titleAlt || (r.alt || []).find((t) => /[\uac00-\ud7af\u3040-\u30ff\u4e00-\u9fff]/.test(t)) || "";
+  const STCLS = { RELEASING: "is-on", FINISHED: "is-done", HIATUS: "is-hold", CANCELLED: "is-off" };
 
-  /** Fetch full MangaUpdates details for a shelf item in the background, then re-render. */
+  /** Fetch fresh details for a shelf item, then save them. */
   function enrich(key, quiet) {
     const it = Ink.store.get(key);
     if (!it) return Promise.resolve(false);
@@ -1442,7 +1302,7 @@
         if (!cur) return false;
         const patch = { item_key: key, data };
         if (cur.status === "completed" && !cur.progress.chapter) {
-          const t = data.totalChapters || data.chapters || data.latestChapter;
+          const t = data.totalChapters || data.latestChapter;
           if (t) patch.progress = { chapter: t, volume: cur.progress.volume || data.totalVolumes || 0 };
         }
         if (quiet) Object.assign(patch, { updated_at: cur.updated_at, keepTime: true });
@@ -1457,6 +1317,17 @@
   }
 
   const flag = (k) => (k === "lightnovel" ? `<span class="x-flag is-ln">LN</span>` : `<span class="x-flag is-manhwa">Manhwa</span>`);
+  const statusPill = (r) => (pub(r) ? `<span class="x-stp ${STCLS[pub(r)] || ""}">${Ink.ui.esc(Ink.ui.fmtStatus(pub(r)))}</span>` : "");
+
+  /** "2,060 chapters" or "Latest ch. 1,275", plus "96 vols" for light novels. */
+  function chapterInfo(r) {
+    const n = Ink.ui.num;
+    const out = [];
+    if (totalCh(r)) out.push(`${n(totalCh(r))} chapters`);
+    else if (latestCh(r)) out.push(`Latest ch. ${n(latestCh(r))}`);
+    if (r.kind === "lightnovel" && vols(r)) out.push(`${n(vols(r))} vols`);
+    return out;
+  }
 
   function setKind(k) {
     kind = k;
@@ -1469,26 +1340,31 @@
     if ($("#q").value.trim()) run($("#q").value, true);
   }
 
-  function skeleton(note) {
+  function skeleton() {
+    const line = (w, h) => `<span class="x-skel x-skel--line" style="width:${w}%;height:${h}px"></span>`;
     $("#search-out").innerHTML =
-      `<p class="x-row__s" style="margin:14px 2px 0">${Ink.ui.esc(note)}</p><div class="x-res">` +
-      Array.from({ length: 6 }, () => `<div class="x-skel" style="height:118px"></div>`).join("") +
+      `<p class="x-sr" role="status">Searching ${kind === "lightnovel" ? "light novels" : "manhwa"}</p><div class="x-res" aria-hidden="true">` +
+      Array.from(
+        { length: 6 },
+        () => `<div class="x-row x-row--skel"><span class="x-row__cover x-skel"></span><span class="x-row__main">${line(22, 14)}${line(78, 16)}${line(46, 12)}${line(64, 12)}${line(52, 14)}</span></div>`
+      ).join("") +
       `</div>`;
   }
 
   function row(r, i) {
     const esc = Ink.ui.esc;
     const on = onShelf(r);
-    const bits = [r.format && r.format.replace(/_/g, " "), r.year, pub(r) && Ink.ui.fmtStatus(pub(r))].filter(Boolean).join(" · ");
-    const count = totalCh(r) ? `${totalCh(r)} ch` : latestCh(r) ? `${latestCh(r)} ch so far` : r.volumes ? `${r.volumes} vol` : "";
+    const facts = chapterInfo(r);
+    if (r.year) facts.push(String(r.year));
+    if (r.score) facts.push(`★ ${r.score}%`);
     return `<button class="x-row" data-i="${i}" type="button">
-  <span class="x-row__cover">${r.cover ? `<img src="${esc(r.cover)}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : ""}</span>
+  <span class="x-row__cover">${Ink.ui.coverImg(r.cover, r.title, r.color, 64, 96)}</span>
   <span class="x-row__main">
-    <span>${flag(r.kind)}</span>
-    <span class="x-row__t">${esc(r.title)}</span>${r.sub ? `
-    <span class="x-row__s">${esc(r.sub)}</span>` : ""}
-    <span class="x-row__s">${esc(bits)}${count ? " · " + esc(count) : ""}${r.score ? " · ★ " + r.score + "%" : ""}</span>
-    <span class="x-tags">${on ? `<span class="x-tag" style="border-color:var(--red);color:var(--txt)">On shelf · ${Ink.library.LABEL[on.status]}</span>` : ""}${(r.genres || [])
+    <span class="x-row__flags">${flag(r.kind || kind)}${statusPill(r)}${on ? `<span class="x-stp is-shelf">${esc(Ink.library.LABEL[on.status])}</span>` : ""}</span>
+    <span class="x-row__t">${esc(r.title)}</span>${subOf(r) ? `
+    <span class="x-row__s">${esc(subOf(r))}</span>` : ""}${facts.length ? `
+    <span class="x-row__s">${esc(facts.join(" · "))}</span>` : ""}
+    <span class="x-tags">${(r.genres || [])
       .slice(0, 3)
       .map((g) => `<span class="x-tag">${esc(g)}</span>`)
       .join("")}</span>
@@ -1501,86 +1377,96 @@
     results = res.results;
     const out = $("#search-out");
     if (results.length) {
-      const partial = `<div class="x-note"><span>Some sources didn't respond (${esc(res.errors.join(", "))}).</span><button class="x-link" data-act="retry">Retry</button></div>`;
-      out.innerHTML = (res.errors.length ? partial : "") + `<div class="x-res">${results.slice(0, 24).map(row).join("")}</div>`;
+      out.innerHTML = `<div class="x-res">${results.map(row).join("")}</div>`;
       return;
     }
-    if (res.errors.length) {
-      out.innerHTML = `<div class="x-note"><span>Search sources didn't respond.</span><button class="x-link" data-act="retry">Retry</button></div>`;
+    if (res.failed) {
+      out.innerHTML = `<div class="x-note" role="alert"><span>Search didn't respond.</span><button class="x-link x-retry" data-act="retry">Retry</button></div>`;
       return;
     }
-    out.innerHTML = `<div class="x-empty"><div class="x-bubble"><h3>No match yet</h3><p>Couldn't find “${esc(q)}” yet — try the Korean or romanized title.</p></div></div>`;
+    out.innerHTML = `<div class="x-empty"><div class="x-bubble" role="status"><h3>No match</h3><p>Couldn't find “${esc(q)}”. Try the Korean or romanized title.</p></div></div>`;
   }
 
-  async function run(raw, now) {
+  function run(raw, now) {
     const q = String(raw || "").trim();
     clearTimeout(timer);
-    if (q.length < 2) {
-      if (ctrl) ctrl.abort();
+    // Typing continues: drop whatever is in flight.
+    if (ctrl) {
+      ctrl.abort();
+      ctrl = null;
+    }
+    if (q.length < MIN) {
       $("#search-out").innerHTML = "";
+      results = [];
       lastQ = "";
       return;
     }
-    const go = async () => {
-      if (ctrl) ctrl.abort();
-      ctrl = new AbortController();
-      const mine = ctrl;
+    const hit = Ink.api.cached(q, kind);
+    if (hit && hit.length) {
       lastQ = q;
-      skeleton(`Searching ${kind === "lightnovel" ? "light novels" : "manhwa"} for “${q}”…`);
+      renderResults({ results: hit, errors: [], failed: false }, q);
+      return;
+    }
+    const go = async () => {
+      const mine = (ctrl = new AbortController());
+      lastQ = q;
+      skeleton();
       try {
-        const res = await Ink.api.search(q, kind, {
-          signal: mine.signal,
-          onStage: (s) => {
-            if (mine !== ctrl) return;
-            if (s === "simplified") skeleton("No exact hit — trying a simpler title…");
-          },
-        });
+        const res = await Ink.api.search(q, kind, { signal: mine.signal });
         if (mine !== ctrl) return;
+        ctrl = null;
         renderResults(res, q);
       } catch (e) {
-        if (e && e.name === "AbortError" && mine !== ctrl) return;
         if (mine !== ctrl) return;
-        renderResults({ results: [], errors: ["Search service"] }, q);
+        ctrl = null;
+        renderResults({ results: [], errors: ["request"], failed: true }, q);
       }
     };
     if (now) go();
-    else timer = setTimeout(go, 400);
+    else timer = setTimeout(go, DEBOUNCE);
   }
 
   /* ---------- detail sheet ---------- */
   function openDetail(r) {
     const esc = Ink.ui.esc;
+    const n = Ink.ui.num;
     const on = onShelf(r);
     const k = (on && on.kind) || r.kind || kind;
     const facts = [
-      ["Chapters", totalCh(r) || (latestCh(r) ? "latest " + latestCh(r) : "—")],
-      ["Volumes", r.totalVolumes || r.volumes || "—"],
-      ["Status", pub(r) ? Ink.ui.fmtStatus(pub(r)) : "—"],
-      ["Score", r.score ? r.score + "%" : "—"],
-      ["Year", r.year || "—"],
-    ];
+      ["Chapters", totalCh(r) ? n(totalCh(r)) : latestCh(r) ? `Latest ${n(latestCh(r))}` : ""],
+      ["Volumes", vols(r) ? n(vols(r)) : ""],
+      ["Status", pub(r) ? Ink.ui.fmtStatus(pub(r)) : ""],
+      ["Score", r.score ? r.score + "%" : ""],
+      ["Year", r.year || ""],
+    ].filter(([, v]) => v);
     const native = subOf(r);
     const desc = r.description || r.desc || "";
     const link = r.siteUrl || r.url || "";
-    const src = (r.sources || [r.source]).filter(Boolean).map((s) => SRC[s] || s).join(" · ");
+    const authors = (r.authors || []).filter(Boolean);
+    const tint = /^#[0-9a-f]{3,8}$/i.test(r.color || "") ? r.color : k === "lightnovel" ? "#f59e0b" : "#22d3ee";
+    const bgUrl = (u) => `url(&quot;${esc(String(u).replace(/["\\\n]/g, encodeURIComponent))}&quot;)`;
     const statusBtns = Ink.store.STATUSES.map((s) => {
       const label = on ? (on.status === s ? `✓ ${Ink.library.LABEL[s]}` : `Move to ${Ink.library.LABEL[s]}`) : { plan: "Add to Plan", reading: "Start reading", completed: "Mark completed" }[s];
       const primary = !on && s === "reading" ? " is-primary" : "";
       return `<button class="x-btn${primary}" data-add="${s}" aria-pressed="${!!on && on.status === s}">${label}</button>`;
     }).join("");
-    const html = `<div class="x-sheet__banner">${r.banner || r.cover ? `<img src="${esc(r.banner || r.cover)}" alt="" referrerpolicy="no-referrer" />` : ""}
+    const html = `<div class="x-sheet__banner" style="--tint:${tint}">
+    ${r.cover ? `<div class="x-sheet__blur" style="background-image:${bgUrl(r.cover)}"></div>` : ""}
+    ${r.banner ? `<img class="x-sheet__bannerimg" src="${esc(r.banner)}" alt="" width="720" height="150" referrerpolicy="no-referrer" data-drop />` : ""}
     <button class="x-iconbtn x-sheet__close" data-close aria-label="Close">✕</button></div>
   <div class="x-sheet__in">
-    <div style="display:flex;gap:14px;align-items:flex-end;margin-top:-64px;position:relative;z-index:2">
-      ${r.cover ? `<img src="${esc(r.cover)}" alt="" referrerpolicy="no-referrer" style="width:92px;aspect-ratio:2/3;object-fit:cover;border-radius:10px;border:1px solid var(--line-2)" />` : ""}
-      <div style="min-width:0">${flag(k)}<h2 id="sheet-title" style="margin-top:6px">${esc(r.title)}</h2>${native ? `<p class="x-row__s" style="margin:4px 0 0">${esc(native)}</p>` : ""}</div>
+    <div class="x-sheet__head">
+      <span class="x-sheet__cover">${Ink.ui.coverImg(r.cover, r.title, r.color, 92, 138, true)}</span>
+      <div style="min-width:0">${flag(k)}<h2 id="sheet-title" style="margin-top:6px">${esc(r.title)}</h2>${native ? `<p class="x-row__s" style="margin:4px 0 0">${esc(native)}</p>` : ""}${
+      authors.length ? `<p class="x-row__s" style="margin:4px 0 0">By ${esc(authors.join(", "))}</p>` : ""
+    }</div>
     </div>
-    <dl class="x-dl">${facts.map(([a, b]) => `<div><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl>
+    ${facts.length ? `<dl class="x-dl">${facts.map(([a, b]) => `<div><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl>` : ""}
     ${r.genres && r.genres.length ? `<div class="x-tags">${r.genres.map((g) => `<span class="x-tag">${esc(g)}</span>`).join("")}</div>` : ""}
     ${desc ? `<div><p class="x-desc is-clamped" id="sheet-desc" style="white-space:pre-line;margin:0">${esc(desc)}</p><button class="x-link" data-more>More</button></div>` : ""}
     ${on ? `<p class="x-row__s" style="margin:0">On your shelf in <b style="color:var(--txt)">${Ink.library.LABEL[on.status]}</b>.</p>` : ""}
     <div class="x-btns">${statusBtns}</div>
-    <p class="x-row__s" style="margin:0">${src ? "From " + esc(src) : ""}${link ? ` · <a href="${esc(link)}" target="_blank" rel="noopener">Open source page</a>` : ""}</p>
+    ${link ? `<p class="x-row__s" style="margin:0"><a href="${esc(link)}" target="_blank" rel="noopener">Open source page</a></p>` : ""}
   </div>`;
 
     Ink.ui.openSheet(html, (sheet) => {
@@ -1605,13 +1491,13 @@
     if (cur) {
       if (cur.status !== status) Ink.store.saveItem({ item_key: cur.item_key, status });
       Ink.ui.toast(`“${r.title}” → ${Ink.library.LABEL[status]}`);
+      if (results.length) renderResults({ results, errors: [] }, lastQ);
       return;
     }
     const total = totalCh(r) || latestCh(r) || 0;
-    const progress = status === "completed" ? { chapter: total, volume: r.totalVolumes || r.volumes || 0 } : {};
-    Ink.store.saveItem({ item_key: r.item_key, kind: k, status, progress, data: toData(r) });
-    // Add right away with search data; fill in full details in the background.
-    if (r.muId) enrich(r.item_key, true);
+    const progress = status === "completed" ? { chapter: total, volume: vols(r) || 0 } : {};
+    // Search rows are already full details, so the item is complete as saved.
+    Ink.store.saveItem({ item_key: r.item_key, kind: k, status, progress, data: Ink.api.toData(r) });
     Ink.ui.toast(`Added “${r.title}” to ${Ink.library.LABEL[status]}`, {
       action: "View",
       onAction: () => {
@@ -1634,7 +1520,7 @@
       if (b.dataset.kind !== kind) return setKind(b.dataset.kind);
       if (input.value.trim()) return run(input.value, true);
       input.focus();
-      Ink.ui.toast(`Searching ${kind === "lightnovel" ? "light novels" : "manhwa"} — type a title.`);
+      Ink.ui.toast(`Searching ${kind === "lightnovel" ? "light novels" : "manhwa"}. Type a title.`);
     });
     $("#search-out").addEventListener("click", (e) => {
       if (e.target.closest('[data-act="retry"]')) return run(lastQ || input.value, true);
@@ -1649,7 +1535,6 @@
       setKind(kind);
     },
     openDetail,
-    toData,
     enrich,
     onShelf,
     focus() {
@@ -1670,8 +1555,36 @@
   const esc = (s) =>
     String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  const STATUS_TXT = { FINISHED: "Finished", RELEASING: "Releasing", ONGOING: "Ongoing", COMPLETED: "Completed", NOT_YET_RELEASED: "Upcoming", CANCELLED: "Cancelled", HIATUS: "Hiatus", PUBLISHING: "Releasing", "ON HIATUS": "Hiatus", DISCONTINUED: "Cancelled" };
+  const STATUS_TXT = { FINISHED: "Completed", RELEASING: "Ongoing", ONGOING: "Ongoing", COMPLETED: "Completed", NOT_YET_RELEASED: "Upcoming", CANCELLED: "Cancelled", HIATUS: "Hiatus", PUBLISHING: "Ongoing", "ON HIATUS": "Hiatus", DISCONTINUED: "Cancelled" };
   const fmtStatus = (s) => STATUS_TXT[String(s).toUpperCase()] || String(s).charAt(0) + String(s).slice(1).toLowerCase().replace(/_/g, " ");
+
+  /** 2060 → "2,060" */
+  const num = (n) => (n == null || n === "" || isNaN(Number(n)) ? String(n == null ? "" : n) : Number(n).toLocaleString("en-US"));
+
+  /** A styled title tile, used when there is no cover or the cover fails. */
+  const tile = (title, color) =>
+    `<span class="x-tile"${/^#[0-9a-f]{3,8}$/i.test(color || "") ? ` style="--c:${color}"` : ""}><span>${esc(title)}</span></span>`;
+
+  /** Cover <img> with fixed size (no layout shift) that falls back to the title tile on error. */
+  const coverImg = (src, title, color, w, h, eager) =>
+    src
+      ? `<img src="${esc(src)}" alt="" width="${w}" height="${h}"${eager ? "" : ` loading="lazy"`} decoding="async" referrerpolicy="no-referrer" data-tile="${esc(title)}" data-c="${esc(color || "")}" />`
+      : tile(title, color);
+
+  // Broken images: covers become the title tile, banners are dropped (the blurred cover shows instead).
+  document.addEventListener(
+    "error",
+    (e) => {
+      const img = e.target;
+      if (!img || img.tagName !== "IMG") return;
+      if (img.hasAttribute("data-drop")) return img.remove();
+      if (!img.hasAttribute("data-tile")) return;
+      const holder = document.createElement("span");
+      holder.innerHTML = tile(img.getAttribute("data-tile"), img.getAttribute("data-c"));
+      img.replaceWith(holder.firstChild);
+    },
+    true
+  );
 
   function toast(msg, opts) {
     opts = opts || {};
@@ -1773,7 +1686,7 @@
     return true;
   }
 
-  Ink.ui = { esc, fmtStatus, toast, openSheet, closeSheet, openMenu, closeMenu };
+  Ink.ui = { esc, num, tile, coverImg, fmtStatus, toast, openSheet, closeSheet, openMenu, closeMenu };
 
   /* ---------- views ---------- */
   let view = "library";
@@ -1795,9 +1708,9 @@
       `<div class="x-sheet__in">
     <div style="display:flex;align-items:center;gap:10px"><h2 id="sheet-title" style="flex:1">Settings</h2><button class="x-iconbtn" data-close aria-label="Close">✕</button></div>
     <dl class="x-dl">
-      <div><dt>Series</dt><dd>${c.total}</dd></div>
-      <div><dt>Reading</dt><dd>${c.reading}</dd></div>
-      <div><dt>Manhwa · LN</dt><dd>${c.manhwa} · ${c.lightnovel}</dd></div>
+      <div><dt>Series</dt><dd>${num(c.total)}</dd></div>
+      <div><dt>Reading</dt><dd>${num(c.reading)}</dd></div>
+      <div><dt>Manhwa · LN</dt><dd>${num(c.manhwa)} · ${num(c.lightnovel)}</dd></div>
       <div><dt>Storage</dt><dd>${saved ? "This browser" : "Memory only"}</dd></div>
     </dl>
     ${saved ? "" : `<div class="x-note">This browser blocks local storage, so the shelf lasts only until you close the tab. Export it to keep a copy.</div>`}
@@ -1833,7 +1746,7 @@
             URL.revokeObjectURL(a.href);
             a.remove();
           }, 500);
-          toast(`Exported ${Ink.store.counts().total} series`);
+          toast(`Exported ${num(Ink.store.counts().total)} series`);
         });
         sheet.querySelector("#set-file").addEventListener("change", (e) => {
           const file = e.target.files && e.target.files[0];
@@ -1844,7 +1757,7 @@
             try {
               const r = Ink.store.importJSON(String(reader.result), mode);
               closeSheet();
-              toast(`Imported: ${r.added} new, ${r.updated} updated${r.skipped ? `, ${r.skipped} skipped` : ""}`);
+              toast(`Imported: ${num(r.added)} new, ${num(r.updated)} updated${r.skipped ? `, ${num(r.skipped)} skipped` : ""}`);
             } catch (err) {
               toast(err.message || "Import failed");
             }
@@ -1880,7 +1793,7 @@
     $("#go-search").addEventListener("click", () => show("search"));
     $("#go-settings").addEventListener("click", openSettings);
     window.addEventListener("resize", closeMenu);
-    if (!Ink.store.isPersistent()) toast("Storage is blocked here — your shelf will last only this session.", { timeout: 7000 });
+    if (!Ink.store.isPersistent()) toast("Storage is blocked here, so your shelf will last only this session.", { timeout: 7000 });
   }
 
   Ink.main = { show, openSettings, get view() { return view; } };
@@ -2128,7 +2041,7 @@
 
   function sectionHTML() {
     const esc = Ink.ui.esc;
-    if (!client) return `<p class="x-desc" style="margin:0">Sync isn't available right now — you may be offline. Your shelf stays saved in this browser.</p>`;
+    if (!client) return `<p class="x-desc" style="margin:0">Sync isn't available right now. You may be offline. Your shelf stays saved in this browser.</p>`;
     if (!session)
       return `<p class="x-desc" style="margin:0">Sign in with a one-time email link to keep your shelf in step on every device.</p>
       <form class="x-syncform" data-sync="form" novalidate>
@@ -2172,7 +2085,7 @@
       out.addEventListener("click", async () => {
         try { await client.auth.signOut(); } catch (e) {}
         onAuth("SIGNED_OUT", null);
-        Ink.ui.toast("Signed out — your shelf stays on this device");
+        Ink.ui.toast("Signed out. Your shelf stays on this device");
       });
   }
 
