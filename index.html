@@ -29,6 +29,8 @@
         --cyan: #22d3ee;
         --amber: #f59e0b;
         --red: #e63946;
+        --cyan-ink: #22d3ee;
+        --amber-ink: #f59e0b;
         --dur: 220ms;
         --ease: cubic-bezier(0.22, 0.8, 0.3, 1);
         --tap: 44px;
@@ -63,7 +65,7 @@
       }
       button, input, select { font: inherit; color: inherit; }
       button { cursor: pointer; }
-      a { color: var(--cyan); }
+      a { color: var(--cyan-ink); }
 
       /* top bar */
       .x-top {
@@ -178,7 +180,7 @@
       .x-badge.is-ln { background: var(--amber); color: #2a1a00; }
       .x-score {
         position: absolute; top: 8px; right: 8px; z-index: 2; font-size: 10px; font-weight: 700;
-        background: rgba(10,10,11,0.82); border: 1px solid var(--line-2); border-radius: 5px; padding: 3px 6px;
+        background: rgba(10,10,11,0.82); border: 1px solid var(--line-2); border-radius: 5px; padding: 3px 6px; color: #f4f4f5;
       }
       .x-card__body { padding: 10px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
       .x-card__title { font-size: 13px; font-weight: 600; line-height: 1.3; height: 2.6em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -285,7 +287,7 @@
       .x-btn:hover { transform: translateY(-1px); border-color: var(--txt-3); }
       .x-btn.is-primary { background: var(--red); border-color: var(--red); color: #fff; }
       .x-btn.is-ghost { background: none; }
-      .x-link { background: none; border: 0; color: var(--cyan); font-size: 12px; font-weight: 600; text-decoration: underline; padding: 0; min-height: 0; }
+      .x-link { background: none; border: 0; color: var(--cyan-ink); font-size: 12px; font-weight: 600; text-decoration: underline; padding: 0; min-height: 0; }
 
       /* toasts */
       .x-toasts { position: fixed; z-index: 90; left: 50%; transform: translateX(-50%); bottom: 96px; display: flex; flex-direction: column; gap: 8px; width: min(440px, calc(100vw - 24px)); }
@@ -297,7 +299,7 @@
       }
       @keyframes x-toast { from { transform: translateY(14px); opacity: 0; } }
       .x-toast span { flex: 1; }
-      .x-toast button { background: none; border: 0; color: var(--cyan); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; min-height: 32px; }
+      .x-toast button { background: none; border: 0; color: var(--cyan-ink); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; min-height: 32px; }
 
       /* bottom tabs */
       .x-bottom {
@@ -369,9 +371,9 @@
       .x-row__flags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
       .x-stp { font-size: 12px; line-height: 1.4; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--txt-2); white-space: nowrap; }
       .x-stp::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 5px; vertical-align: 1px; }
-      .x-stp.is-on { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 45%, transparent); }
+      .x-stp.is-on { color: var(--cyan-ink); border-color: color-mix(in srgb, var(--cyan) 45%, transparent); }
       .x-stp.is-done { color: var(--txt); }
-      .x-stp.is-hold { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 45%, transparent); }
+      .x-stp.is-hold { color: var(--amber-ink); border-color: color-mix(in srgb, var(--amber) 45%, transparent); }
       .x-stp.is-off { color: #ff7a83; border-color: color-mix(in srgb, #ff7a83 45%, transparent); }
       .x-stp.is-shelf { background: #c42532; border-color: #c42532; color: #fff; font-weight: 600; }
       .x-stp.is-shelf::before { display: none; }
@@ -438,7 +440,7 @@
         padding: 3px 6px; border-radius: 5px; transform: skewX(-10deg);
         background: rgba(10,10,11,0.82); border: 1px solid var(--cyan); color: var(--cyan);
       }
-      .x-flag.is-origin { background: transparent; border: 1px solid var(--cyan); color: var(--cyan); padding: 2px 6px; }
+      .x-flag.is-origin { background: transparent; border: 1px solid var(--cyan-ink); color: var(--cyan-ink); padding: 2px 6px; }
       .x-caught { position: absolute; left: 8px; bottom: 8px; z-index: 2; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 7px; border-radius: 5px; background: rgba(10,10,11,0.86); border: 1px solid var(--cyan); color: var(--cyan); }
       [hidden] { display: none !important; }
       .x-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -457,6 +459,7 @@
         color-scheme: light;
         --ink: #f4f3f0; --ink-2: #ffffff; --ink-3: #efeef2; --line: #e1e0e6; --line-2: #c9c8d1;
         --txt: #141417; --txt-2: #4a4a54; --txt-3: #64646e;
+        --cyan-ink: #0e7490; --amber-ink: #b45309;
       }
       html[data-theme="light"] body::before { background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1.2px); }
       html[data-theme="light"] .x-top { background: rgba(255, 255, 255, 0.88); }
@@ -1757,8 +1760,8 @@
   const Ink = (window.Ink = window.Ink || {});
   const $ = (s) => document.querySelector(s);
   const PANELS = [
-    { kind: "manhwa", title: "Manhwa", acc: "var(--cyan)" },
-    { kind: "lightnovel", title: "Light novels", acc: "var(--amber)" },
+    { kind: "manhwa", title: "Manhwa", acc: "var(--cyan-ink)" },
+    { kind: "lightnovel", title: "Light novels", acc: "var(--amber-ink)" },
   ];
   const PARTS = [
     { s: "reading", label: "Reading", c: "#3fb950" },
