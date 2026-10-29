@@ -180,8 +180,12 @@
         background: rgba(10,10,11,0.82); border: 1px solid var(--line-2); border-radius: 5px; padding: 3px 6px;
       }
       .x-card__body { padding: 10px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
-      .x-card__title { font-size: 13px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-      .x-card__meta { font-size: 11px; color: var(--txt-3); }
+      .x-card__title { font-size: 13px; font-weight: 600; line-height: 1.3; height: 2.6em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .x-card__meta { font-size: 11px; color: var(--txt-3); display: flex; align-items: center; gap: 6px; white-space: nowrap; min-width: 0; height: 16px; }
+      .x-card__meta > span { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+      .x-card__meta .x-unit { flex: none; margin-left: auto; padding: 0; }
+      .x-card__meta + * { margin-top: auto; }
+      .x-grid > .x-card { height: 100%; }
       .x-bar { height: 4px; border-radius: 3px; background: #26262b; overflow: hidden; }
       .x-bar i { display: block; height: 100%; border-radius: 3px; background: var(--glow, var(--red)); box-shadow: 0 0 10px var(--glow, var(--red)); transition: width 320ms var(--ease); }
       .x-prog { display: flex; align-items: center; gap: 6px; }
@@ -529,7 +533,6 @@
         <div class="x-stats" id="stats-out"></div>
       </section>
 
-      <p class="x-foot">INKSHELF</p>
     </main>
 
     <nav class="x-bottom" aria-label="Sections">
@@ -1116,7 +1119,7 @@
   </div>
   <div class="x-card__body">
     <div class="x-card__title" title="${esc(d.title)}">${esc(d.title)}</div>
-    <div class="x-card__meta">${esc(meta)}${isLN ? ` · <button class="x-unit" data-act="unit" aria-label="Track by ${unit === "volume" ? "chapter" : "volume"}">by ${unit}</button>` : ""}</div>
+    <div class="x-card__meta"><span>${esc(meta)}</span>${isLN ? `<button class="x-unit" data-act="unit" aria-label="Track by ${unit === "volume" ? "chapter" : "volume"}">by ${unit}</button>` : ""}</div>
     ${total ? `<div class="x-bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>` : ""}
     ${canGo ? `<button class="x-continue" data-act="inc" aria-label="${it.status === "plan" ? "Start" : "Continue"}: mark ${unit} ${n(v + 1)} read">${it.status === "plan" ? "Start" : "Continue"} · ${short} ${n(v + 1)}</button>` : ""}
     <div class="x-prog">
