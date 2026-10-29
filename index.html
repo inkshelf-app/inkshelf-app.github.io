@@ -829,7 +829,7 @@
   });
   const BASE = CONFIG.SUPABASE_URL + "/functions/v1/inkshelf";
   const TIMEOUT = 15000;
-  const CACHE_KEY = "inkshelf.search.v3:v3";
+  const CACHE_KEY = "inkshelf.search.v4";
   const ORIGINS = { manhwa: "Manhwa", manhua: "Manhua", novel: "Novel" };
   const TTL = 6 * 3600 * 1000;
   const MAX = 60;
@@ -976,7 +976,7 @@
 
   /* ---------- cache: memory + storage, 6 h, LRU of 60 ---------- */
   const mem = new Map();
-  safeStorage.removeItem("inkshelf.search.v3");
+  safeStorage.removeItem("inkshelf.search.v3:v3");
   const readAll = () => {
     try {
       return JSON.parse(safeStorage.getItem(CACHE_KEY) || "{}") || {};
