@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>INKSHELF · Manhwa &amp; Light Novel Tracker</title>
-    <meta name="theme-color" content="#0b1020" />
+    <meta name="theme-color" content="#0a0a0b" />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0a0b'/%3E%3Crect x='6' y='7' width='7' height='18' rx='1.5' fill='%2322d3ee'/%3E%3Crect x='15' y='7' width='7' height='18' rx='1.5' fill='%23f59e0b'/%3E%3Crect x='24' y='7' width='3' height='18' rx='1.5' fill='%23e63946'/%3E%3C/svg%3E"
@@ -13,26 +13,21 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap"
     />
     <style>
       :root {
-        --ink: #0b1020;
-        --ink-2: #121a2e;
-        --ink-3: #18223a;
-        --line: rgba(255, 255, 255, 0.08);
-        --line-2: rgba(255, 255, 255, 0.14);
-        --txt: #e8e6e1;
-        --txt-2: #9aa3b8;
-        --txt-3: #9aa3b8;
-        --accent: #f07a3a;
-        --accent-ink: #1a0f08;
-        --ln: #8fa2ff;
-        --serif: "Cormorant Garamond", Georgia, serif;
-        /* old accents now all point at the orange; .x-stats restores its own bar colours */
-        --cyan: var(--accent);
-        --amber: var(--accent);
-        --red: var(--accent);
+        --ink: #0a0a0b;
+        --ink-2: #111113;
+        --ink-3: #17171a;
+        --line: #26262b;
+        --line-2: #35353d;
+        --txt: #f4f4f5;
+        --txt-2: #a1a1aa;
+        --txt-3: #71717a;
+        --cyan: #22d3ee;
+        --amber: #f59e0b;
+        --red: #e63946;
         --dur: 220ms;
         --ease: cubic-bezier(0.22, 0.8, 0.3, 1);
         --tap: 44px;
@@ -59,11 +54,11 @@
       }
       .x-wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 16px; }
       h1, h2, h3, .x-bebas {
-        font-family: var(--serif);
-        font-weight: 600;
-        letter-spacing: 0;
+        font-family: "Bebas Neue", Impact, sans-serif;
+        font-weight: 400;
+        letter-spacing: 0.04em;
         margin: 0;
-        line-height: 1.1;
+        line-height: 1;
       }
       button, input, select { font: inherit; color: inherit; }
       button { cursor: pointer; }
@@ -315,13 +310,13 @@
       .x-bottom button[aria-current="true"] svg { color: var(--red); }
       .x-foot { text-align: center; font-size: 11px; color: var(--txt-3); padding: 34px 0 10px; letter-spacing: 0.06em; }
       /* readability: 12px minimum, AA contrast, 44px targets */
-      :root { --txt-3: #9aa3b8; }
+      :root { --txt-3: #9a9aa4; }
       .x-logo span, .x-sechead__note, .x-seg button, .x-tab em, .x-badge, .x-score, .x-card__meta,
       .x-mini, .x-unit, .x-row__s, .x-tag, .x-flag, .x-dl dt, .x-bottom button, .x-foot,
       .x-panel > p { font-size: 12px !important; }
       .x-logo span, .x-sechead__note, .x-dl dt { letter-spacing: 0.1em; }
       .x-seg button { min-height: var(--tap); }
-      .x-btn.is-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      .x-btn.is-primary { background: #c42532; border-color: #c42532; }
       /* account pill + sync */
       .x-pill {
         min-height: var(--tap); max-width: 46vw; display: inline-flex; align-items: center; gap: 8px;
@@ -440,341 +435,6 @@
       }
       .x-flag.is-origin { background: transparent; border: 1px solid var(--cyan); color: var(--cyan); padding: 2px 6px; }
       .x-caught { position: absolute; left: 8px; bottom: 8px; z-index: 2; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 7px; border-radius: 5px; background: rgba(10,10,11,0.86); border: 1px solid var(--cyan); color: var(--cyan); }
-      /* ===== redesign step 1: palette, type, sidebar, search hero ===== */
-      .x-stats { --cyan: #22d3ee; --amber: #f59e0b; --red: #e63946; }
-      .x-stats .x-link { color: var(--accent); }
-      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-      .x-tab:focus-visible, .x-chip:focus-visible { outline-color: var(--accent); }
-      .x-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(240, 122, 58, 0.18); }
-      .x-top { background: rgba(11, 16, 32, 0.9); }
-      .x-bottom { background: rgba(18, 26, 46, 0.94); }
-      .x-logo b { font-family: var(--serif); font-weight: 600; font-size: 28px; letter-spacing: 0.16em; }
-      .x-logo b i { color: inherit; }
-      .x-logo span { text-transform: uppercase; letter-spacing: 0.22em !important; }
-      .x-sechead__tag { transform: none; background: none; color: var(--txt); padding: 0; font-family: var(--serif); font-weight: 600; font-size: 32px; letter-spacing: 0; }
-      .x-tab { font-family: Inter, sans-serif; font-size: 15px; font-weight: 500; letter-spacing: 0; }
-      .x-tab em { font-weight: 600; }
-      .x-tab[aria-selected="true"] { border-color: var(--accent); }
-      .x-chip { font-weight: 500; letter-spacing: 0.06em; }
-      .x-chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-      .x-btn, .x-mini, .x-continue, .x-iconbtn, .x-step, .x-num, .x-select { border-radius: 999px; }
-      .x-btn { font-weight: 600; }
-      .x-btn.is-primary:hover { border-color: var(--accent); filter: brightness(1.06); }
-      .x-card__title, .x-row__t { font-family: var(--serif); font-weight: 600; font-size: 17px; line-height: 1.2; }
-      .x-sheet h2 { font-size: 34px; }
-      .x-bubble h3 { font-size: 30px; }
-      .x-stat__head h3 { font-size: 30px; }
-      .x-tile { font-family: var(--serif); font-weight: 600; letter-spacing: 0; line-height: 1.1; }
-      .x-badge, .x-flag, .x-origin { transform: none; font-family: Inter, sans-serif; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 999px; }
-      .x-badge.is-manhwa, .x-flag.is-manhwa { background: rgba(11, 16, 32, 0.82); border: 1px solid var(--accent); color: var(--accent); }
-      .x-badge.is-ln, .x-flag.is-ln { background: rgba(11, 16, 32, 0.82); border: 1px solid var(--ln); color: var(--ln); }
-      .x-score, .x-caught { background: rgba(11, 16, 32, 0.86); border-radius: 999px; }
-      .x-bar { background: rgba(255, 255, 255, 0.08); }
-      .x-bar i { background: var(--accent); box-shadow: none; }
-      .x-step:hover { border-color: var(--accent); }
-      .x-continue { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--ink-3)); }
-      .x-continue:hover { background: color-mix(in srgb, var(--accent) 30%, var(--ink-3)); }
-      .x-stp.is-shelf, .x-new { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-      .x-menu button:hover { background: var(--ink-2); }
-      .x-skel { background: linear-gradient(90deg, #141c31, #1c2742, #141c31); background-size: 200% 100%; }
-      .x-toast { background: var(--ink-3); }
-
-      /* search hero */
-      .x-hero { position: relative; height: 180px; margin: 20px 0 16px; border-radius: 18px; overflow: hidden; background: var(--ink-2); display: flex; align-items: flex-end; }
-      .x-hero__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: right center; display: block; }
-      .x-hero::after {
-        content: ""; position: absolute; inset: 0;
-        background: linear-gradient(to top, #0b1020, rgba(11, 16, 32, 0) 50%), linear-gradient(90deg, #0b1020 30%, rgba(11, 16, 32, 0.55) 65%, rgba(11, 16, 32, 0.2));
-      }
-      .x-hero__copy { position: relative; z-index: 1; padding: 0 20px 18px; }
-      .x-hero h1 { font-size: 34px; font-weight: 600; line-height: 1.05; }
-      .x-hero p { margin: 6px 0 0; font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 18px; color: #f2b48f; }
-      .x-searchbox .x-searchrow { align-items: center; gap: 10px; }
-      .x-searchbox .x-field svg { left: 20px; width: 19px; height: 19px; }
-      #q { min-height: 56px; border-radius: 999px; padding: 0 20px 0 50px; font-size: 16px; background: var(--ink-2); }
-      .x-seg, .x-seg.is-cyan, .x-seg.is-amber { background: none; border: 0; padding: 0; gap: 8px; }
-      .x-seg button { border: 1px solid var(--line-2); border-radius: 999px; padding: 0 18px; letter-spacing: 0.08em; font-weight: 500; }
-      .x-seg button[aria-pressed="true"], .x-seg.is-cyan button[aria-pressed="true"], .x-seg.is-amber button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-      .x-searchbox__hint { margin: 10px 4px 0; font-size: 12px; color: var(--txt-3); }
-
-      /* sidebar parts (desktop only) */
-      .x-side, .x-side__lbl { display: none; }
-      @media (min-width: 1024px) {
-        body { padding-bottom: 24px; }
-        .x-bottom { display: none; }
-        .x-top {
-          position: fixed; top: 0; left: 0; bottom: 0; width: 248px; overflow-y: auto;
-          background: var(--ink-2); border-bottom: 0; border-right: 1px solid var(--line); backdrop-filter: none;
-        }
-        .x-top__in { flex-direction: column; align-items: stretch; gap: 6px; height: 100%; min-height: 560px; max-width: none; padding: 28px 14px 18px; }
-        .x-logo { flex-direction: column; align-items: flex-start; gap: 6px; padding: 0 12px 24px; }
-        .x-logo b { font-size: 30px; letter-spacing: 0.2em; }
-        .x-side { display: flex; flex-direction: column; gap: 2px; }
-        .x-side__item {
-          position: relative; display: flex; align-items: center; gap: 12px; width: 100%;
-          min-height: var(--tap); padding: 0 12px; border: 0; border-radius: 10px; background: none;
-          font-size: 14px; font-weight: 500; color: var(--txt-2); text-align: left;
-          transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
-        }
-        .x-side__item svg { width: 18px; height: 18px; flex: none; }
-        .x-side__item:hover { background: var(--ink-3); color: var(--txt); }
-        .x-side__item[aria-current="true"] { background: var(--ink-3); color: var(--txt); }
-        .x-side__item[aria-current="true"]::before { content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px; border-radius: 3px; background: var(--accent); }
-        .x-side__item[aria-current="true"] svg { color: var(--accent); }
-        .x-side__label { margin: 22px 12px 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--txt-3); }
-        .x-side__dot { width: 8px; height: 8px; border-radius: 50%; flex: none; margin: 0 5px; border: 1.5px solid currentColor; }
-        .x-side__n { margin-left: auto; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--txt-3); }
-        .x-top__sp { flex: 1; }
-        #go-stats, #go-search { display: none; }
-        .x-pill { max-width: none; width: 100%; justify-content: flex-start; }
-        #go-settings { width: 100%; justify-content: flex-start; gap: 12px; padding: 0 12px; border: 0; border-radius: 10px; background: none; color: var(--txt-2); font-size: 14px; font-weight: 500; }
-        #go-settings:hover { background: var(--ink-3); color: var(--txt); transform: none; }
-        #go-settings svg { width: 18px; height: 18px; }
-        .x-side__lbl { display: inline; }
-        .x-wrap { margin: 0 auto 0 248px; max-width: 1100px; padding: 0 40px; }
-        .x-toasts { left: calc(50% + 124px); bottom: 24px; }
-        .x-hero { height: 260px; margin-top: 32px; }
-        .x-hero__copy { padding: 0 36px 30px; }
-        .x-hero h1 { font-size: 56px; }
-        .x-hero p { font-size: 24px; }
-      }
-      /* ===== redesign step 2: result cards, detail panel ===== */
-      .x-reshead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 28px 0 14px; }
-      .x-reshead__t { font-size: 28px; }
-      .x-reshead__n { font-size: 13px; color: var(--txt-2); }
-      .x-res, .x-reshead + .x-res { grid-template-columns: 1fr !important; gap: 14px; margin-top: 14px; }
-      .x-reshead + .x-res { margin-top: 0; }
-      .x-res .x-row {
-        gap: 0; padding: 0; overflow: hidden; align-items: stretch;
-        background: var(--ink-2); border: 1px solid var(--line); border-radius: 16px;
-        transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-      }
-      .x-res .x-row:hover { transform: none; border-color: rgba(240, 122, 58, 0.5); }
-      .x-res .x-row.is-open, .x-res .x-row.is-open:hover { border-color: #f07a3a; box-shadow: 0 0 0 0.5px #f07a3a; }
-      .x-res .x-row__cover { width: 180px; flex: 0 0 180px; aspect-ratio: 3 / 4; border-radius: 16px 0 0 16px; align-self: stretch; }
-      .x-res .x-row__cover img { width: 100%; height: 100%; aspect-ratio: auto; object-fit: cover; }
-      .x-res .x-row__main { padding: 22px; gap: 8px; justify-content: center; }
-      .x-res .x-row__t { font-family: var(--serif); font-weight: 600; font-size: 26px; line-height: 1.1; }
-      .x-res .x-row__s { color: var(--txt-2); }
-      .x-row__d { font-size: 14px; line-height: 1.5; color: var(--txt-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-      .x-row__ch { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 6px; }
-      .x-row__chl { font-size: 13px; color: var(--txt-2); }
-      .x-row__chn { font-family: var(--serif); font-weight: 600; font-size: 22px; line-height: 1.1; color: var(--txt); }
-      .x-row__g { font-size: 12px; color: var(--txt-2); }
-      @media (max-width: 619px) {
-        .x-res .x-row__cover { width: 104px; flex-basis: 104px; }
-        .x-res .x-row__main { padding: 16px; gap: 6px; }
-        .x-res .x-row__t { font-size: 20px; }
-        .x-row__d { -webkit-line-clamp: 2; }
-      }
-
-      .x-det__hero { position: relative; height: 300px; overflow: hidden; background: color-mix(in srgb, var(--tint, var(--accent)) 28%, var(--ink-2)); }
-      .x-det__hero > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-      .x-det__hero .x-tile { font-size: 30px; }
-      .x-det__hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, var(--ink-2), rgba(18, 26, 46, 0) 55%); }
-      .x-det__in { position: relative; z-index: 2; margin-top: -28px; padding: 0 24px 28px; display: flex; flex-direction: column; gap: 14px; }
-      .x-sheet .x-det__t { font-size: 36px; font-weight: 600; line-height: 1.05; }
-      .x-det__t::after { content: ""; display: block; width: 40px; height: 2px; margin-top: 14px; background: var(--accent); }
-      .x-det__sub { margin: -4px 0 0; font-size: 13px; color: var(--txt-2); }
-      .x-det__desc { margin: 0; font-size: 14px; line-height: 1.6; color: var(--txt-2); white-space: pre-line; }
-      .x-det__facts { margin: 0; }
-      .x-det__facts div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line); }
-      .x-det__facts div:first-child { border-top: 1px solid var(--line); }
-      .x-det__facts dt { font-size: 13px; color: var(--txt-2); flex: none; }
-      .x-det__facts dd { margin: 0; font-size: 14px; font-weight: 500; text-align: right; overflow-wrap: anywhere; }
-      .x-det__ctl { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
-      .x-det__lbl { margin: 8px 0 0; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--txt-2); }
-      .x-det__sts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-      .x-det__st {
-        min-height: 68px; padding: 10px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-        background: none; border: 1px solid var(--line-2); border-radius: 12px; color: var(--txt);
-        font-size: 13px; font-weight: 500; line-height: 1.2; text-align: center;
-        transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
-      }
-      .x-det__st svg { width: 20px; height: 20px; }
-      .x-det__st:hover:not(:disabled) { border-color: rgba(240, 122, 58, 0.6); }
-      .x-det__st[aria-pressed="true"] { background: #f07a3a; border-color: #f07a3a; color: var(--accent-ink); }
-      .x-det__st:disabled { opacity: 0.45; cursor: not-allowed; }
-      .x-det__note { margin: 0; font-size: 12px; color: var(--txt-2); }
-      .x-det__stepper { display: grid; grid-template-columns: 56px 1fr 56px; height: 56px; border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; }
-      .x-det__stepper button { border: 0; background: none; font-size: 24px; line-height: 1; color: var(--txt); transition: background var(--dur) var(--ease), color var(--dur) var(--ease); }
-      .x-det__stepper button:first-child { border-right: 1px solid var(--line-2); }
-      .x-det__stepper button:last-child { border-left: 1px solid var(--line-2); }
-      .x-det__stepper button:hover:not(:disabled) { background: var(--ink-3); color: var(--accent); }
-      .x-det__stepper button:disabled { opacity: 0.4; cursor: default; }
-      .x-det__stepper button[aria-disabled="true"] { opacity: 0.55; }
-      .x-det__stepper input {
-        min-width: 0; width: 100%; border: 0; background: none; outline: none; text-align: center;
-        font-family: var(--serif); font-weight: 600; font-size: 28px; font-variant-numeric: tabular-nums; -moz-appearance: textfield;
-      }
-      .x-det__stepper input::-webkit-outer-spin-button, .x-det__stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-      .x-det__stepper:focus-within { border-color: var(--accent); }
-      .x-det__add {
-        margin-top: 8px; width: 100%; min-height: 52px; border: 0; border-radius: 12px;
-        background: #f07a3a; color: var(--accent-ink); font-size: 15px; font-weight: 600;
-        transition: filter var(--dur) var(--ease), transform 120ms var(--ease);
-      }
-      .x-det__add:hover { filter: brightness(1.06); }
-      .x-det__add:active { transform: scale(0.99); }
-      .x-det__on { margin: 8px 0 0; font-size: 13px; color: var(--txt-2); }
-      .x-det__on b { color: var(--txt); font-weight: 600; }
-      .x-det__rm { align-self: flex-start; min-height: var(--tap); padding: 0; border: 0; background: none; font-size: 13px; color: var(--txt-2); }
-      .x-det__rm:hover { color: var(--txt); text-decoration: underline; }
-      @media (min-width: 1280px) {
-        .x-sheet.x-sheet--panel {
-          top: 0; right: 0; bottom: 0; left: auto; z-index: 45; transform: none;
-          width: 400px; max-height: none; border: 0; border-left: 1px solid var(--line); border-radius: 0;
-          overscroll-behavior: contain; animation: x-dock 260ms var(--ease);
-        }
-        .x-has-panel .x-scrim { display: none; }
-        .x-has-panel .x-wrap { margin-right: 400px; }
-        .x-has-panel .x-toasts { left: calc(50% - 76px); }
-      }
-      @keyframes x-dock { from { transform: translateX(28px); opacity: 0.4; } }
-
-      /* ===== redesign step 3: storybook at night ===== */
-      :root { --dur: 160ms; --orange-soft: #e0956a; }
-      body {
-        background:
-          radial-gradient(1200px 600px at 70% -10%, rgba(240, 122, 58, 0.08), transparent),
-          radial-gradient(900px 500px at 0% 100%, rgba(90, 110, 200, 0.1), transparent),
-          #0b1020;
-        background-attachment: fixed;
-      }
-      body::before {
-        z-index: 200; opacity: 0.04; background-size: 220px 220px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      }
-
-      /* logo mark: star over a thin orange line */
-      .x-logo { position: relative; padding-left: 18px; }
-      .x-logo__mark { position: absolute; left: 0; top: 2px; bottom: 2px; width: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
-      .x-logo__mark svg { width: 11px; height: 11px; flex: none; color: var(--accent); }
-      @media (max-width: 430px) {
-        .x-top__in { gap: 8px; padding-left: 12px; padding-right: 12px; }
-        .x-logo { padding-left: 14px; min-width: 0; }
-        .x-logo b { letter-spacing: 0.1em; }
-      }
-      html { overflow-x: clip; }
-      .x-logo__mark::after { content: ""; flex: 1; width: 1px; background: linear-gradient(to bottom, var(--accent), rgba(240, 122, 58, 0.15)); }
-
-      /* sidebar art + quote */
-      .x-side__quote { display: none; }
-      @media (min-width: 1024px) {
-        .x-top { background: rgba(18, 26, 46, 0.82); }
-        .x-top::before {
-          content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 64%; pointer-events: none;
-          background: var(--art, none) 30% bottom / cover no-repeat; opacity: 0.22;
-          -webkit-mask-image: linear-gradient(to top, #000 30%, transparent); mask-image: linear-gradient(to top, #000 30%, transparent);
-        }
-        .x-top__in { position: relative; z-index: 1; }
-        .x-logo { padding-left: 34px; }
-        .x-logo__mark { left: 12px; top: 4px; bottom: 26px; }
-        .x-side__quote { display: block; margin: 0 12px 14px; font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 19px; line-height: 1.25; color: var(--orange-soft); }
-      }
-
-      /* hero */
-      .x-hero h1 { text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55), 0 0 34px rgba(240, 122, 58, 0.14); }
-      .x-hero p { display: inline-block; margin-top: 10px; transform: rotate(-2deg); transform-origin: left center; text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5); }
-
-      /* tabs */
-      .x-tab { font-family: var(--serif); font-size: 22px; font-weight: 600; color: var(--txt-3); margin-right: 22px; padding: 8px 2px; }
-      .x-tab em, .x-tab[aria-selected="true"] em { font-family: Inter, sans-serif; font-weight: 500; color: var(--txt-3); vertical-align: 4px; }
-      .x-tab[aria-selected="true"] { color: var(--txt); border-bottom: 2px solid var(--accent); }
-
-      /* library cards, matching the result cards */
-      #lib-grid.x-grid { grid-template-columns: 1fr; gap: 14px; }
-      @media (min-width: 1280px) {
-        #lib-grid.x-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .x-has-panel #lib-grid.x-grid { grid-template-columns: 1fr; }
-      }
-      .x-lc {
-        flex-direction: row; align-items: stretch; cursor: pointer;
-        background: var(--ink-2); border: 1px solid var(--line); border-radius: 16px;
-        transition: transform 160ms var(--ease), box-shadow 160ms var(--ease), border-color 160ms var(--ease);
-      }
-      .x-lc:hover, .x-res .x-row:hover { transform: translateY(-2px); border-color: rgba(240, 122, 58, 0.45); box-shadow: 0 16px 34px -20px rgba(0, 0, 0, 0.85), 0 4px 14px -8px rgba(240, 122, 58, 0.18); }
-      .x-lc:has(.x-card__open:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
-      .x-lc .x-card__open:focus-visible { outline: none; }
-      .x-lc .x-card__media { flex: 0 0 120px; width: 120px; aspect-ratio: 3 / 4; align-self: stretch; border-radius: 16px 0 0 16px; }
-      .x-lc .x-card__media img { height: 100%; aspect-ratio: auto; }
-      .x-lc .x-card__media .x-tile { font-size: 17px; }
-      .x-lc .x-card__body { padding: 18px 20px; gap: 8px; justify-content: center; min-width: 0; }
-      .x-lc .x-card__title { font-family: var(--serif); font-weight: 600; font-size: 22px; line-height: 1.12; }
-      .x-lc .x-row__g { white-space: nowrap; }
-      .x-lc__ch { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 6px; }
-      .x-lc__ch .x-unit { min-height: 32px; color: var(--txt-2); }
-      .x-lc .x-bar { height: 4px; border-radius: 999px; }
-      .x-lc .x-bar i { border-radius: 999px; }
-      .x-lc__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 4px; }
-      .x-lc .x-continue {
-        width: auto; flex: none; min-height: var(--tap); padding: 0 20px; border-radius: 999px;
-        background: var(--accent); border: 1px solid var(--accent); color: var(--accent-ink);
-        font-size: 13px; font-weight: 600; letter-spacing: 0.02em; text-transform: none;
-        transition: filter 160ms var(--ease), transform 160ms var(--ease);
-      }
-      .x-lc .x-continue:hover { background: var(--accent); filter: brightness(1.07); transform: translateY(-1px); }
-      .x-lc .x-prog { gap: 0; }
-      .x-lc .x-step { width: var(--tap); height: var(--tap); background: none; border: 1px solid transparent; color: var(--txt-2); font-weight: 500; font-size: 18px; }
-      .x-lc .x-step:hover { border-color: var(--line-2); color: var(--txt); }
-      .x-lc .x-num { flex: 0 0 60px; min-height: var(--tap); background: none; border: 0; }
-      .x-lc .x-num input { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--txt); -moz-appearance: textfield; }
-      .x-lc .x-num input::-webkit-outer-spin-button, .x-lc .x-num input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-      .x-lc .x-num:focus-within { box-shadow: inset 0 -2px 0 var(--accent); border-radius: 0; }
-      .x-lc .x-card__acts { margin-left: auto; gap: 2px; }
-      .x-lc .x-mini { flex: none; min-height: var(--tap); padding: 0 10px; border: 0; background: none; letter-spacing: 0.06em; color: var(--txt-3); }
-      .x-lc .x-mini:hover { color: var(--txt); }
-      .x-lc .x-new, .x-lc .x-caught { left: 6px; bottom: 6px; }
-      @media (max-width: 619px) {
-        .x-lc .x-card__media { flex-basis: 92px; width: 92px; }
-        .x-lc .x-card__body { padding: 14px; }
-        .x-lc .x-card__title { font-size: 20px; }
-        .x-lc .x-continue { min-height: var(--tap); }
-        .x-lc .x-card__acts { margin-left: 0; }
-      }
-
-      /* covers fade in */
-      img[data-tile] { opacity: 0; transition: opacity 420ms var(--ease); }
-      img[data-tile].is-in { opacity: 1; }
-
-      /* detail: bottom sheet below 1280px */
-      .x-det__grab { display: none; }
-      @media (max-width: 1279px) {
-        .x-sheet.x-sheet--panel {
-          top: auto; bottom: 0; left: 0; right: 0; margin: 0 auto; transform: none;
-          width: min(100%, 760px); max-height: 88vh; overscroll-behavior: contain;
-          border: 1px solid var(--line-2); border-bottom: 0; border-radius: 22px 22px 0 0;
-          box-shadow: 0 -24px 60px -30px #000; animation: x-sheetup 320ms var(--ease);
-        }
-        .x-det__grab {
-          display: flex; position: absolute; top: 0; left: 50%; z-index: 4; transform: translateX(-50%);
-          width: 140px; height: var(--tap); align-items: flex-start; justify-content: center; padding-top: 10px;
-          touch-action: none; cursor: grab;
-        }
-        .x-det__grab::before { content: ""; width: 44px; height: 5px; border-radius: 999px; background: rgba(232, 230, 225, 0.6); box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5); }
-      }
-      @keyframes x-sheetup { from { transform: translateY(100%); } }
-
-      /* empty states */
-      .x-quiet { position: relative; isolation: isolate; text-align: center; padding: 48px 16px 40px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-      .x-quiet::before {
-        content: ""; position: absolute; left: 50%; top: 0; width: min(520px, 100%); height: 100%; transform: translateX(-50%); pointer-events: none; z-index: -1;
-        background: var(--art, none) center 40% / cover no-repeat; opacity: 0.12;
-        -webkit-mask-image: radial-gradient(closest-side, #000, transparent); mask-image: radial-gradient(closest-side, #000, transparent);
-      }
-      .x-quiet__ic { width: 44px; height: 44px; color: var(--orange-soft); opacity: 0.8; margin-bottom: 4px; }
-      .x-quiet__line { margin: 0; max-width: 460px; font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 24px; line-height: 1.25; color: var(--txt-2); }
-      .x-quiet__sub { margin: 0; max-width: 420px; font-size: 14px; color: var(--txt-3); }
-      .x-quiet__btns { justify-content: center; margin-top: 14px; }
-      .x-recent { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 14px; max-width: 560px; }
-      .x-recent__l { flex-basis: 100%; margin: 0 0 2px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--txt-3); }
-      .x-recent__b {
-        min-height: var(--tap); padding: 0 16px; border-radius: 999px; background: rgba(18, 26, 46, 0.7);
-        border: 1px solid var(--line-2); color: var(--txt); font-size: 14px;
-        transition: border-color 160ms var(--ease), transform 160ms var(--ease), color 160ms var(--ease);
-      }
-      .x-recent__b:hover { border-color: var(--accent); color: var(--orange-soft); transform: translateY(-1px); }
-
       [hidden] { display: none !important; }
       .x-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       @media (prefers-reduced-motion: reduce) {
@@ -787,30 +447,10 @@
     <header class="x-top">
       <div class="x-top__in">
         <div class="x-logo">
-          <i class="x-logo__mark" aria-hidden="true"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 0 7.2 4.8 12 6 7.2 7.2 6 12 4.8 7.2 0 6 4.8 4.8z"/></svg></i>
           <b>INK<i>SHELF</i></b>
-          <span>Stories stay with you</span>
+          <span>manhwa &amp; ln</span>
         </div>
-        <nav class="x-side" aria-label="Sections">
-          <button type="button" class="x-side__item" data-view="search" aria-current="false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-            Search
-          </button>
-          <button type="button" class="x-side__item" data-view="library" aria-current="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h5v14H4zM10 5h4v14h-4zM16 6l4 1-2 12-4-1z"/></svg>
-            My library
-          </button>
-          <button type="button" class="x-side__item" data-view="stats" aria-current="false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20h18M6 20v-6M11 20V5M16 20v-9M20 20v-3"/></svg>
-            Stats
-          </button>
-          <p class="x-side__label">Library</p>
-          <button type="button" class="x-side__item" data-shelf-tab="reading"><i class="x-side__dot" aria-hidden="true"></i>Reading<span class="x-side__n" data-count="reading">0</span></button>
-          <button type="button" class="x-side__item" data-shelf-tab="plan"><i class="x-side__dot" aria-hidden="true"></i>Plan to read<span class="x-side__n" data-count="plan">0</span></button>
-          <button type="button" class="x-side__item" data-shelf-tab="completed"><i class="x-side__dot" aria-hidden="true"></i>Completed<span class="x-side__n" data-count="completed">0</span></button>
-        </nav>
         <div class="x-top__sp"></div>
-        <p class="x-side__quote">More stories, brighter days.</p>
         <button class="x-pill" id="acct-pill" type="button" aria-label="Sign in to keep your shelf on all your devices">
           <i class="x-pill__dot" data-s="local"></i><span class="x-pill__e"></span><span class="x-pill__s">Sign in</span>
         </button>
@@ -822,7 +462,6 @@
         </button>
         <button class="x-iconbtn" id="go-settings" aria-label="Settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
-          <span class="x-side__lbl" aria-hidden="true">Settings</span>
         </button>
       </div>
     </header>
@@ -843,7 +482,8 @@
         <div class="x-chips" style="margin-top: 14px; align-items: center">
           <div class="x-chips" id="lib-kind" role="group" aria-label="Series type"></div>
           <span class="x-sechead__rule" style="min-width: 10px"></span>
-          <select class="x-select" id="lib-sort" aria-label="Sort">
+          <label class="x-sr" for="lib-sort">Sort</label>
+          <select class="x-select" id="lib-sort">
             <option value="newest">Newest chapters</option>
             <option value="recent">Recently updated</option>
             <option value="title">Title A to Z</option>
@@ -859,14 +499,11 @@
       </section>
 
       <section id="view-search" hidden>
-        <div class="x-hero">
-          <img class="x-hero__img" src="inkshelf-hero.jpg" alt="" />
-          <div class="x-hero__copy">
-            <h1>Find your next story</h1>
-            <p>Different worlds. Same you.</p>
-          </div>
+        <div class="x-sechead">
+          <span class="x-sechead__tag is-red">Search</span>
+          <span class="x-sechead__rule"></span>
         </div>
-        <div class="x-searchbox">
+        <div class="x-panel" style="padding: 12px">
           <div class="x-searchrow">
             <div class="x-field">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -877,7 +514,7 @@
               <button type="button" data-kind="lightnovel" aria-pressed="false">Light novel</button>
             </div>
           </div>
-          <p class="x-searchbox__hint">
+          <p style="margin: 10px 2px 0; font-size: 11px; color: var(--txt-3)">
             Manhwa mode finds Korean and Chinese webtoons. Light novel mode finds novels.
           </p>
         </div>
@@ -1468,21 +1105,19 @@
     const atLimit = !!limit && v >= limit;
     const canGo = it.status !== "completed" && !atLimit;
     const pct = pctOf(it);
-    const chl = (t) => `<span class="x-row__chl">${t}</span>`;
-    const chLine = `${chl(short)} <b class="x-row__chn">${n(v)}</b>${total ? ` ${chl("/ " + n(total))}` : latest ? ` ${chl("· latest " + n(latest))}` : ` ${chl("· " + esc(st || "Ongoing"))}`}`;
-    return `<article class="x-card x-lc" data-key="${esc(it.item_key)}">
+    return `<article class="x-card" data-key="${esc(it.item_key)}" style="--glow:${c};background:linear-gradient(180deg,color-mix(in srgb,${c} 16%,var(--ink-2)),var(--ink-2) 62%)">
   <div class="x-card__media">
-    ${Ink.ui.coverImg(d.cover, d.title, d.color, 180, 240)}
+    ${Ink.ui.coverImg(d.cover, d.title, d.color, 200, 300)}
+    <span class="x-badges"><span class="x-badge ${isLN ? "is-ln" : "is-manhwa"}">${isLN ? "LN" : "Manhwa"}</span>${isManhua(d, it.kind) ? `<span class="x-origin">Manhua</span>` : ""}</span>
+    ${d.score ? `<span class="x-score">★ ${d.score}%</span>` : ""}
     ${fresh ? `<span class="x-new" aria-label="${n(fresh)} new chapters"><b>New</b> +${n(fresh)}</span>` : ""}
     ${caught ? `<span class="x-caught">Caught up</span>` : ""}
     <button class="x-card__open" data-act="open" aria-label="Details for ${esc(d.title)}"></button>
   </div>
   <div class="x-card__body">
-    <span class="x-row__flags"><span class="x-flag ${isLN ? "is-ln" : "is-manhwa"}">${isLN ? "LN" : "Manhwa"}</span>${isManhua(d, it.kind) ? `<span class="x-flag is-origin">Manhua</span>` : ""}${d.score ? `<span class="x-row__g">★ ${d.score}%</span>` : ""}</span>
     <div class="x-card__title" title="${esc(d.title)}">${esc(d.title)}</div>
-    <div class="x-lc__ch">${chLine}${isLN ? ` ${chl("·")} <button class="x-unit" data-act="unit" aria-label="Track by ${unit === "volume" ? "chapter" : "volume"}">by ${unit}</button>` : ""}</div>
+    <div class="x-card__meta">${esc(meta)}${isLN ? ` · <button class="x-unit" data-act="unit" aria-label="Track by ${unit === "volume" ? "chapter" : "volume"}">by ${unit}</button>` : ""}</div>
     ${total ? `<div class="x-bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>` : ""}
-    <div class="x-lc__acts">
     ${canGo ? `<button class="x-continue" data-act="inc" aria-label="${it.status === "plan" ? "Start" : "Continue"}: mark ${unit} ${n(v + 1)} read">${it.status === "plan" ? "Start" : "Continue"} · ${short} ${n(v + 1)}</button>` : ""}
     <div class="x-prog">
       <button class="x-step" data-act="dec" aria-label="Minus one ${unit}"${v <= 0 ? " disabled" : ""}>−</button>
@@ -1492,7 +1127,6 @@
     <div class="x-card__acts">
       <button class="x-mini" data-act="move" aria-haspopup="menu">Move to</button>
       <button class="x-mini is-danger" data-act="remove" aria-label="Remove ${esc(d.title)}">Remove</button>
-    </div>
     </div>
   </div>
 </article>`;
@@ -1552,10 +1186,13 @@
           ? "Finished series land here. Ongoing series stay in Reading."
           : "Save series you want to read later.";
     }
-    const btns = clear
-      ? `<button class="x-btn is-primary" data-act="clear-${clear}">${clear === "filter" ? "Clear filter" : "Show all series"}</button><button class="x-btn" data-act="find">Find a series</button>`
-      : `<button class="x-btn is-primary" data-act="find">Find a series</button>`;
-    empty.innerHTML = Ink.ui.quiet(title + ".", text, `<div class="x-btns x-quiet__btns">${btns}</div>`);
+    if (clear) {
+      empty.innerHTML = `<div class="x-empty"><div class="x-bubble"><h3>${esc(title)}</h3><p>${esc(text)}</p></div>
+      <div class="x-btns" style="justify-content:center;margin-top:26px"><button class="x-btn is-primary" data-act="clear-${clear}">${clear === "filter" ? "Clear filter" : "Show all series"}</button><button class="x-btn" data-act="find">Find a series</button></div></div>`;
+      return;
+    }
+    empty.innerHTML = `<div class="x-empty"><div class="x-bubble"><h3>${esc(title)}</h3><p>${esc(text)}</p></div>
+      <div class="x-btns" style="justify-content:center;margin-top:26px"><button class="x-btn is-primary" data-act="find">Find a series</button></div></div>`;
   }
 
   /* ---------- actions (all writes go through the store) ---------- */
@@ -1728,14 +1365,11 @@
     grid.addEventListener("click", (e) => {
       const b = e.target.closest("[data-act]");
       const cardEl = e.target.closest(".x-card");
-      if (!cardEl) return;
-      // A click anywhere on the card that isn't a control opens the details.
-      if (!b && e.target.closest("button, input, label, a, select")) return;
+      if (!b || !cardEl) return;
       const key = cardEl.dataset.key;
       const it = Ink.store.get(key);
       if (!it) return;
-      const act = b ? b.dataset.act : "open";
-      if (act === "set") return;
+      const act = b.dataset.act;
       if (act === "inc") setProgress(key, valueOf(it) + 1);
       else if (act === "dec") setProgress(key, valueOf(it) - 1);
       else if (act === "unit") Ink.store.saveItem({ item_key: key, progress: { unit: unitOf(it) === "volume" ? "chapter" : "volume" } });
@@ -1750,6 +1384,26 @@
     grid.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && e.target.matches('input[data-act="set"]')) e.target.blur();
     });
+
+    // Tilt on hover (mouse only, off under reduced motion)
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+    grid.addEventListener("pointermove", (e) => {
+      if (e.pointerType !== "mouse" || still.matches) return;
+      const c = e.target.closest(".x-card");
+      if (!c) return;
+      const r = c.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      c.style.transform = `perspective(700px) rotateY(${x * 7}deg) rotateX(${-y * 7}deg) translateY(-3px)`;
+    });
+    grid.addEventListener(
+      "pointerout",
+      (e) => {
+        const c = e.target.closest(".x-card");
+        if (c && !c.contains(e.relatedTarget)) c.style.transform = "";
+      },
+      true
+    );
 
     Ink.store.onChange(render);
   }
@@ -1767,11 +1421,6 @@
       render();
     },
     move,
-    remove,
-    setProgress,
-    unitOf,
-    valueOf,
-    limitOf,
     ongoing,
     isManhua,
     LABEL,
@@ -1796,7 +1445,6 @@
   let ctrl = null;
   let results = [];
   let lastQ = "";
-  let openKey = null;
 
   /** The shelf item for a result, under its new key or an older al:/mal: key. */
   function onShelf(r) {
@@ -1843,6 +1491,16 @@
     (r && Ink.library.isManhua(r, k) ? `<span class="x-flag is-origin">Manhua</span>` : "");
   const statusPill = (r) => (pub(r) ? `<span class="x-stp ${STCLS[pub(r)] || ""}">${Ink.ui.esc(Ink.ui.fmtStatus(pub(r)))}</span>` : "");
 
+  /** "2,060 chapters" or "Latest ch. 1,275", plus "96 vols" for light novels. */
+  function chapterInfo(r) {
+    const n = Ink.ui.num;
+    const out = [];
+    if (totalCh(r)) out.push(`${n(totalCh(r))} chapters`);
+    else if (latestCh(r)) out.push(`Latest ch. ${n(latestCh(r))}`);
+    if (r.kind === "lightnovel" && vols(r)) out.push(`${n(vols(r))} vols`);
+    return out;
+  }
+
   function setKind(k) {
     kind = k;
     try {
@@ -1865,45 +1523,25 @@
       `</div>`;
   }
 
-  /** "Chapters available 2,060" or "Latest chapter 518", plus "Volumes 96" for light novels. */
-  function chapterLine(r) {
-    const esc = Ink.ui.esc;
-    const n = Ink.ui.num;
-    const part = (label, v) => `<span class="x-row__chl">${label}</span> <b class="x-row__chn">${esc(n(v))}</b>`;
-    const out = [];
-    if (totalCh(r)) out.push(part("Chapters available", totalCh(r)));
-    else if (latestCh(r)) out.push(part("Latest chapter", latestCh(r)));
-    if ((r.kind || kind) === "lightnovel" && vols(r)) out.push(part("Volumes", vols(r)));
-    return out.join(`<span class="x-row__chl"> · </span>`);
-  }
-
   function row(r, i) {
     const esc = Ink.ui.esc;
     const on = onShelf(r);
-    const desc = String(r.description || r.desc || "").replace(/\s+/g, " ").trim();
-    const ch = chapterLine(r);
-    const meta = (r.genres || []).slice(0, 3);
-    if (r.year) meta.push(String(r.year));
-    if (r.score) meta.push(`★ ${r.score}%`);
-    return `<button class="x-row${openKey && r.item_key === openKey ? " is-open" : ""}" data-i="${i}" type="button">
-  <span class="x-row__cover">${Ink.ui.coverImg(r.cover, r.title, r.color, 180, 240)}</span>
+    const facts = chapterInfo(r);
+    if (r.year) facts.push(String(r.year));
+    if (r.score) facts.push(`★ ${r.score}%`);
+    return `<button class="x-row" data-i="${i}" type="button">
+  <span class="x-row__cover">${Ink.ui.coverImg(r.cover, r.title, r.color, 64, 96)}</span>
   <span class="x-row__main">
     <span class="x-row__flags">${flag(r.kind || kind, r)}${statusPill(r)}${on ? `<span class="x-stp is-shelf">${esc(Ink.library.LABEL[on.status])}</span>` : ""}</span>
     <span class="x-row__t">${esc(r.title)}</span>${subOf(r) ? `
-    <span class="x-row__s">${esc(subOf(r))}</span>` : ""}${desc ? `
-    <span class="x-row__d">${esc(desc)}</span>` : ""}${ch ? `
-    <span class="x-row__ch">${ch}</span>` : ""}${meta.length ? `
-    <span class="x-row__g">${esc(meta.join(" · "))}</span>` : ""}
+    <span class="x-row__s">${esc(subOf(r))}</span>` : ""}${facts.length ? `
+    <span class="x-row__s">${esc(facts.join(" · "))}</span>` : ""}
+    <span class="x-tags">${(r.genres || [])
+      .slice(0, 3)
+      .map((g) => `<span class="x-tag">${esc(g)}</span>`)
+      .join("")}</span>
   </span>
 </button>`;
-  }
-
-  /** Outline the result whose details are open. */
-  function markOpen() {
-    document.querySelectorAll("#search-out .x-row[data-i]").forEach((b) => {
-      const r = results[b.dataset.i];
-      b.classList.toggle("is-open", !!openKey && !!r && r.item_key === openKey);
-    });
   }
 
   function renderResults(res, q) {
@@ -1911,49 +1549,14 @@
     results = res.results;
     const out = $("#search-out");
     if (results.length) {
-      const c = results.length;
-      if (q && q.length >= 3) remember(q);
-      out.innerHTML = `<div class="x-reshead"><h2 class="x-reshead__t">Search results</h2><span class="x-reshead__n">${Ink.ui.num(c)} ${c === 1 ? "result" : "results"}</span></div><div class="x-res">${results.map(row).join("")}</div>`;
+      out.innerHTML = `<div class="x-res">${results.map(row).join("")}</div>`;
       return;
     }
     if (res.failed) {
       out.innerHTML = `<div class="x-note" role="alert"><span>Couldn't search right now.</span><button class="x-link x-retry" data-act="retry">Retry</button></div>`;
       return;
     }
-    out.innerHTML = Ink.ui.quiet(`No match for “${q}”.`, "Try the Korean or romanized title.", "", true);
-  }
-
-  /* ---------- before typing: hint + recent searches (stored locally) ---------- */
-  const RECENT = "inkshelf.recentSearches";
-  function recent() {
-    try {
-      const a = JSON.parse(localStorage.getItem(RECENT) || "[]");
-      return Array.isArray(a) ? a.filter((x) => typeof x === "string").slice(0, 6) : [];
-    } catch (e) {
-      return [];
-    }
-  }
-  function remember(q) {
-    const low = q.toLowerCase();
-    // Typing "omn" then "omniscient" keeps only the latest of the two.
-    const list = [q].concat(recent().filter((x) => {
-      const l = x.toLowerCase();
-      return !l.startsWith(low) && !low.startsWith(l);
-    })).slice(0, 6);
-    try {
-      localStorage.setItem(RECENT, JSON.stringify(list));
-    } catch (e) {}
-  }
-  function intro() {
-    const esc = Ink.ui.esc;
-    const rec = recent();
-    $("#search-out").innerHTML = Ink.ui.quiet(
-      "Search by English, Korean or romanized title.",
-      "",
-      rec.length
-        ? `<div class="x-recent" role="group" aria-label="Recent searches"><p class="x-recent__l" aria-hidden="true">Recent</p>${rec.map((q) => `<button type="button" class="x-recent__b" data-recent="${esc(q)}">${esc(q)}</button>`).join("")}</div>`
-        : ""
-    );
+    out.innerHTML = `<div class="x-empty"><div class="x-bubble" role="status"><h3>No match</h3><p>Couldn't find “${esc(q)}”. Try the Korean or romanized title.</p></div></div>`;
   }
 
   function run(raw, now) {
@@ -1965,7 +1568,7 @@
       ctrl = null;
     }
     if (q.length < MIN) {
-      intro();
+      $("#search-out").innerHTML = "";
       results = [];
       lastQ = "";
       return;
@@ -2002,7 +1605,7 @@
     const on = onShelf(r);
     const k = (on && on.kind) || r.kind || kind;
     const facts = [
-      [totalCh(r) ? "Chapters available" : "Latest chapter", n(totalCh(r) || latestCh(r) || "")],
+      ["Chapters", totalCh(r) ? n(totalCh(r)) : latestCh(r) ? `Latest ${n(latestCh(r))}` : ""],
       ["Volumes", vols(r) ? n(vols(r)) : ""],
       ["Status", pub(r) ? Ink.ui.fmtStatus(pub(r)) : ""],
       ["Score", r.score ? r.score + "%" : ""],
@@ -2012,135 +1615,51 @@
     const desc = r.description || r.desc || "";
     const link = r.siteUrl || r.url || "";
     const authors = (r.authors || []).filter(Boolean);
-    if (authors.length) facts.push(["Authors", authors.join(", ")]);
     const tint = /^#[0-9a-f]{3,8}$/i.test(r.color || "") ? r.color : k === "lightnovel" ? "#f59e0b" : "#22d3ee";
-    const html = `<div class="x-det">
-  <div class="x-det__hero" style="--tint:${tint}">
-    ${Ink.ui.coverImg(r.cover, r.title, r.color, 400, 300, true)}
-    ${r.banner ? `<img class="x-det__banner" src="${esc(r.banner)}" alt="" width="720" height="300" referrerpolicy="no-referrer" data-drop />` : ""}
-    <button class="x-iconbtn x-sheet__close" data-close aria-label="Close">✕</button>
-    <span class="x-det__grab" data-grab aria-hidden="true"></span>
-  </div>
-  <div class="x-det__in">
-    <span class="x-row__flags">${flag(k, r)}</span>
-    <h2 id="sheet-title" class="x-det__t">${esc(r.title)}</h2>
-    ${native ? `<p class="x-det__sub">${esc(native)}</p>` : ""}
-    ${desc ? `<p class="x-det__desc" id="sheet-desc">${esc(desc)}</p>` : ""}
-    ${facts.length ? `<dl class="x-det__facts">${facts.map(([a, b]) => `<div><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl>` : ""}
-    ${r.genres && r.genres.length ? `<div class="x-tags">${r.genres.map((g) => `<span class="x-tag">${esc(g)}</span>`).join("")}</div>` : ""}
-    <div class="x-det__ctl" data-ctl></div>
-    ${link ? `<p class="x-row__s" style="margin:0"><a href="${esc(link)}" target="_blank" rel="noopener">Open series page</a></p>` : ""}
-  </div>
-</div>`;
-
-    const L = Ink.library;
-    const total = totalCh(r) || latestCh(r) || 0;
-    let sel = on ? on.status : "plan";
-    let val = on ? L.valueOf(on) : 0;
-    const ICON = {
-      plan: `<path d="M6 4h12v16l-6-4-6 4z"/>`,
-      reading: `<path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/>`,
-      completed: `<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/>`,
-    };
-    const NAME = { plan: "Plan to read", reading: "Reading", completed: "Completed" };
-    const draft = () => ({ kind: k, status: sel, progress: { unit: "chapter", chapter: val, volume: 0 }, data: r });
-    let off = null;
-    const clamp = (x, limit) => {
-      const v = Math.max(0, Math.floor(Number(x) || 0));
-      return limit && v > limit ? limit : v;
-    };
-
-    Ink.ui.openSheet(
-      html,
-      (sheet) => {
-        const ctl = sheet.querySelector("[data-ctl]");
-        const paint = () => {
-          const cur = onShelf(r);
-          const it = cur || draft();
-          const unit = L.unitOf(it);
-          const limit = L.limitOf(it);
-          const v = cur ? L.valueOf(cur) : val;
-          const active = cur ? cur.status : sel;
-          const live = L.ongoing((cur && cur.data) || r) || L.ongoing(r);
-          const lock = live && active !== "completed";
-          const st = pub(r) ? Ink.ui.fmtStatus(pub(r)) : "Ongoing";
-          const fid = document.activeElement && ctl.contains(document.activeElement) ? document.activeElement : null;
-          const again = fid ? (fid.dataset.add ? `[data-add="${fid.dataset.add}"]` : fid.dataset.step ? `[data-step="${fid.dataset.step}"]` : fid.id ? `#${fid.id}` : "[data-act]") : null;
-          ctl.innerHTML = `<p class="x-det__lbl" id="det-st-l">Status</p>
-    <div class="x-det__sts" role="group" aria-labelledby="det-st-l">${Ink.store.STATUSES.map(
-      (s) => `<button type="button" class="x-det__st" data-add="${s}" aria-pressed="${active === s}"${s === "completed" && lock ? ` disabled aria-describedby="det-note"` : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[s]}</svg>${NAME[s]}</button>`
-    ).join("")}</div>
-    ${lock ? `<p class="x-det__note" id="det-note">“${esc(r.title)}” is still ${st === "Hiatus" ? "on hiatus" : esc(st.toLowerCase())}, so it can't be completed yet.</p>` : ""}
-    <p class="x-det__lbl"><label for="det-num">${unit === "volume" ? "Volume read" : "Chapter read"}</label></p>
-    <div class="x-det__stepper">
-      <button type="button" data-step="-1" aria-label="Minus one ${unit}"${v <= 0 ? " disabled" : ""}>−</button>
-      <input id="det-num" type="number" inputmode="numeric" min="0"${limit ? ` max="${limit}"` : ""} value="${v}" aria-describedby="det-cap" />
-      <button type="button" data-step="1" aria-label="Plus one ${unit}"${limit && v >= limit ? ` aria-disabled="true"` : ""}>+</button>
+    const bgUrl = (u) => `url(&quot;${esc(String(u).replace(/["\\\n]/g, encodeURIComponent))}&quot;)`;
+    const live = Ink.library.ongoing((on && on.data) || r) || Ink.library.ongoing(r);
+    const statusBtns = Ink.store.STATUSES.filter((s) => !(s === "completed" && live && !(on && on.status === s))).map((s) => {
+      const label = on ? (on.status === s ? `✓ ${Ink.library.LABEL[s]}` : `Move to ${Ink.library.LABEL[s]}`) : { plan: "Add to Plan", reading: "Start reading", completed: "Mark completed" }[s];
+      const primary = !on && s === "reading" ? " is-primary" : "";
+      return `<button class="x-btn${primary}" data-add="${s}" aria-pressed="${!!on && on.status === s}">${label}</button>`;
+    }).join("");
+    const html = `<div class="x-sheet__banner" style="--tint:${tint}">
+    ${r.cover ? `<div class="x-sheet__blur" style="background-image:${bgUrl(r.cover)}"></div>` : ""}
+    ${r.banner ? `<img class="x-sheet__bannerimg" src="${esc(r.banner)}" alt="" width="720" height="150" referrerpolicy="no-referrer" data-drop />` : ""}
+    <button class="x-iconbtn x-sheet__close" data-close aria-label="Close">✕</button></div>
+  <div class="x-sheet__in">
+    <div class="x-sheet__head">
+      <span class="x-sheet__cover">${Ink.ui.coverImg(r.cover, r.title, r.color, 92, 138, true)}</span>
+      <div style="min-width:0"><span class="x-row__flags">${flag(k, r)}</span><h2 id="sheet-title" style="margin-top:6px">${esc(r.title)}</h2>${native ? `<p class="x-row__s" style="margin:4px 0 0">${esc(native)}</p>` : ""}${
+      authors.length ? `<p class="x-row__s" style="margin:4px 0 0">By ${esc(authors.join(", "))}</p>` : ""
+    }</div>
     </div>
-    <span class="x-sr" id="det-cap">${limit ? `Up to ${n(limit)}` : ""}</span>
-    ${
-      cur
-        ? `<p class="x-det__on">On your shelf in <b>${L.LABEL[cur.status]}</b>.</p><button type="button" class="x-det__rm" data-act="remove">Remove from library</button>`
-        : `<button type="button" class="x-det__add" data-act="add">Add to library</button>`
-    }`;
-          if (again) (ctl.querySelector(again) || ctl.querySelector("[data-act]")).focus({ preventScroll: true });
-        };
-        paint();
-        off = Ink.store.onChange(() => {
-          if (!sheet.isConnected) return;
-          paint();
-          if (results.length && document.querySelector("#search-out .x-row[data-i]")) renderResults({ results, errors: [] }, lastQ);
+    ${facts.length ? `<dl class="x-dl">${facts.map(([a, b]) => `<div><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl>` : ""}
+    ${r.genres && r.genres.length ? `<div class="x-tags">${r.genres.map((g) => `<span class="x-tag">${esc(g)}</span>`).join("")}</div>` : ""}
+    ${desc ? `<div><p class="x-desc is-clamped" id="sheet-desc" style="white-space:pre-line;margin:0">${esc(desc)}</p><button class="x-link" data-more>More</button></div>` : ""}
+    ${on ? `<p class="x-row__s" style="margin:0">On your shelf in <b style="color:var(--txt)">${Ink.library.LABEL[on.status]}</b>.</p>` : ""}
+    <div class="x-btns">${statusBtns}</div>
+    ${link ? `<p class="x-row__s" style="margin:0"><a href="${esc(link)}" target="_blank" rel="noopener">Open series page</a></p>` : ""}
+  </div>`;
+
+    Ink.ui.openSheet(html, (sheet) => {
+      const more = sheet.querySelector("[data-more]");
+      if (more)
+        more.addEventListener("click", () => {
+          const d = sheet.querySelector("#sheet-desc");
+          const c = d.classList.toggle("is-clamped");
+          more.textContent = c ? "More" : "Less";
         });
-        ctl.addEventListener("click", (e) => {
-          const cur = onShelf(r);
-          const b = e.target.closest("button");
-          if (!b || b.disabled) return;
-          if (b.dataset.add) {
-            if (cur) return add(r, b.dataset.add, k);
-            sel = b.dataset.add;
-            if (sel === "completed") val = clamp(total, L.limitOf(draft()));
-            return paint();
-          }
-          if (b.dataset.step) {
-            const d = Number(b.dataset.step);
-            if (cur) return L.setProgress(cur.item_key, L.valueOf(cur) + d);
-            val = clamp(val + d, L.limitOf(draft()));
-            if (val > 0 && sel === "plan") sel = "reading";
-            return paint();
-          }
-          if (b.dataset.act === "remove" && cur) return L.remove(cur.item_key);
-          if (b.dataset.act === "add") {
-            add(r, sel, k, val);
-            if (!window.matchMedia("(min-width: 1280px)").matches) Ink.ui.closeSheet();
-          }
-        });
-        ctl.addEventListener("change", (e) => {
-          if (e.target.id !== "det-num") return;
-          const cur = onShelf(r);
-          if (cur) {
-            L.setProgress(cur.item_key, e.target.value);
-            return paint();
-          }
-          val = clamp(e.target.value, L.limitOf(draft()));
-          if (val > 0 && sel === "plan") sel = "reading";
-          paint();
-        });
-        openKey = r.item_key || null;
-        markOpen();
-      },
-      {
-        panel: true,
-        onClose: () => {
-          if (off) off();
-          off = null;
-          openKey = null;
-          markOpen();
-        },
-      }
-    );
+      sheet.querySelectorAll("[data-add]").forEach((b) =>
+        b.addEventListener("click", () => {
+          add(r, b.dataset.add, k);
+          Ink.ui.closeSheet();
+        })
+      );
+    });
   }
 
-  function add(r, status, k, value) {
+  function add(r, status, k) {
     const cur = onShelf(r);
     if (cur) {
       if (r.origin && !cur.data.origin) Ink.store.saveItem({ item_key: cur.item_key, data: { origin: r.origin }, updated_at: cur.updated_at, keepTime: true });
@@ -2150,8 +1669,7 @@
       return;
     }
     const total = totalCh(r) || latestCh(r) || 0;
-    const start = Math.max(0, Math.floor(Number(value) || 0));
-    const progress = status === "completed" ? { chapter: total, volume: vols(r) || 0 } : start ? { chapter: total ? Math.min(start, total) : start } : {};
+    const progress = status === "completed" ? { chapter: total, volume: vols(r) || 0 } : {};
     // Search rows are already full details, so the item is complete as saved.
     Ink.store.saveItem({ item_key: r.item_key, kind: k, status, progress, data: Ink.api.toData(r) });
     Ink.ui.toast(`Added “${r.title}” to ${Ink.library.LABEL[status]}`, {
@@ -2180,12 +1698,6 @@
     });
     $("#search-out").addEventListener("click", (e) => {
       if (e.target.closest('[data-act="retry"]')) return run(lastQ || input.value, true);
-      const rb = e.target.closest("[data-recent]");
-      if (rb) {
-        input.value = rb.dataset.recent;
-        input.focus();
-        return run(input.value, true);
-      }
       const b = e.target.closest(".x-row[data-i]");
       if (b && results[b.dataset.i]) openDetail(results[b.dataset.i]);
     });
@@ -2195,7 +1707,6 @@
     init() {
       bind();
       setKind(kind);
-      if ($("#q").value.trim().length < MIN) intro();
     },
     openDetail,
     enrich,
@@ -2359,27 +1870,15 @@
   }
 
   let lastFocus = null;
-  let closeCb = null;
-  const DOCK = "(min-width: 1280px)";
-  /** opts.panel: dock as a right-side panel on wide screens; opts.onClose runs when it goes away. */
-  function openSheet(html, onMount, opts) {
-    opts = opts || {};
+  function openSheet(html, onMount) {
     closeMenu();
     const layer = $("#layer");
     if (!layer.innerHTML) lastFocus = document.activeElement;
-    if (closeCb) {
-      const cb = closeCb;
-      closeCb = null;
-      cb();
-    }
-    const docked = () => !!opts.panel && window.matchMedia(DOCK).matches;
-    layer.innerHTML = `<div class="x-scrim" data-close></div><div class="x-sheet${opts.panel ? " x-sheet--panel" : ""}" role="dialog"${docked() ? "" : ` aria-modal="true"`} aria-labelledby="sheet-title">${html}</div>`;
-    document.body.classList.toggle("x-has-panel", !!opts.panel);
-    closeCb = opts.onClose || null;
+    layer.innerHTML = `<div class="x-scrim" data-close></div><div class="x-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">${html}</div>`;
     const sheet = layer.querySelector(".x-sheet");
     layer.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeSheet));
     sheet.addEventListener("keydown", (e) => {
-      if (e.key !== "Tab" || docked()) return;
+      if (e.key !== "Tab") return;
       const f = sheet.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
       if (!f.length) return;
       const first = f[0];
@@ -2392,7 +1891,7 @@
         first.focus();
       }
     });
-    document.body.style.overflow = docked() ? "" : "hidden";
+    document.body.style.overflow = "hidden";
     if (onMount) onMount(sheet);
     const focusable = sheet.querySelector("[data-add], .x-btn, button");
     if (focusable) focusable.focus({ preventScroll: true });
@@ -2402,12 +1901,6 @@
     if (!layer.innerHTML) return false;
     layer.innerHTML = "";
     document.body.style.overflow = "";
-    document.body.classList.remove("x-has-panel");
-    if (closeCb) {
-      const cb = closeCb;
-      closeCb = null;
-      cb();
-    }
     if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
     lastFocus = null;
     return true;
@@ -2454,11 +1947,7 @@
     return true;
   }
 
-  /** Quiet empty state: book-and-moon line icon, an italic line, optional small text and extras. */
-  const quiet = (line, sub, extra, live) =>
-    `<div class="x-quiet"${live ? ` role="status"` : ""}><svg class="x-quiet__ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17c6.5-2 13-1 19 3v22c-6-4-12.5-5-19-3z"/><path d="M43 17c-6.5-2-13-1-19 3v22c6-4 12.5-5 19-3z"/><path d="M33.5 3.5a6 6 0 1 0 7 7 4.8 4.8 0 0 1-7-7z"/><path d="M26 6.5v2M25 7.5h2"/></svg><p class="x-quiet__line">${esc(line)}</p>${sub ? `<p class="x-quiet__sub">${esc(sub)}</p>` : ""}${extra || ""}</div>`;
-
-  Ink.ui = { esc, num, tile, coverImg, fmtStatus, toast, openSheet, closeSheet, openMenu, closeMenu, quiet };
+  Ink.ui = { esc, num, tile, coverImg, fmtStatus, toast, openSheet, closeSheet, openMenu, closeMenu };
 
   /* ---------- views ---------- */
   let view = "library";
@@ -2468,7 +1957,7 @@
     $("#view-library").hidden = v !== "library";
     $("#view-search").hidden = v !== "search";
     $("#view-stats").hidden = v !== "stats";
-    document.querySelectorAll(".x-bottom [data-view], .x-side [data-view]").forEach((b) => b.setAttribute("aria-current", String(b.dataset.view === v)));
+    document.querySelectorAll(".x-bottom [data-view]").forEach((b) => b.setAttribute("aria-current", String(b.dataset.view === v)));
     window.scrollTo({ top: 0 });
     if (v === "search") Ink.search.focus();
   }
@@ -2553,7 +2042,7 @@
     Ink.library.init();
     Ink.search.init();
     Ink.stats.init();
-    document.querySelectorAll(".x-bottom [data-view], .x-side [data-view]").forEach((b) => b.addEventListener("click", () => show(b.dataset.view)));
+    document.querySelectorAll(".x-bottom [data-view]").forEach((b) => b.addEventListener("click", () => show(b.dataset.view)));
     $("#go-search").addEventListener("click", () => show("search"));
     $("#go-stats").addEventListener("click", () => show("stats"));
     $("#go-settings").addEventListener("click", openSettings);
@@ -2890,71 +2379,6 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
-    </script>
-    <script>
-      /* sidebar shelf shortcuts: open the shelf on a tab, counts follow the store */
-      (function () {
-        const side = document.querySelector(".x-side");
-        if (!side || !window.Ink || !Ink.store) return;
-        function counts() {
-          const c = Ink.store.counts();
-          side.querySelectorAll("[data-count]").forEach((el) => {
-            el.textContent = Ink.ui ? Ink.ui.num(c[el.dataset.count] || 0) : c[el.dataset.count] || 0;
-          });
-        }
-        side.addEventListener("click", (e) => {
-          const b = e.target.closest("[data-shelf-tab]");
-          if (!b) return;
-          Ink.library.setTab(b.dataset.shelfTab);
-          Ink.main.show("library");
-        });
-        Ink.store.onChange(counts);
-        counts();
-      })();
-
-      /* night-study art for the sidebar backdrop and empty states, from the hero image */
-      (function () {
-        const art = document.querySelector(".x-hero__img");
-        if (art && art.src) document.documentElement.style.setProperty("--art", `url("${art.src}")`);
-      })();
-
-      /* covers fade in once loaded */
-      (function () {
-        const show = (img) => img.classList.add("is-in");
-        document.addEventListener("load", (e) => { if (e.target.tagName === "IMG" && e.target.hasAttribute("data-tile")) show(e.target); }, true);
-        const sweep = () => document.querySelectorAll("img[data-tile]:not(.is-in)").forEach((img) => { if (img.complete && img.naturalWidth) show(img); });
-        new MutationObserver(sweep).observe(document.body, { childList: true, subtree: true });
-        sweep();
-      })();
-
-      /* detail bottom sheet: drag the handle down to close */
-      (function () {
-        const layer = document.getElementById("layer");
-        layer.addEventListener("pointerdown", (e) => {
-          const g = e.target.closest("[data-grab]");
-          if (!g || window.matchMedia("(min-width: 1280px)").matches) return;
-          const sheet = g.closest(".x-sheet");
-          const y0 = e.clientY;
-          let dy = 0;
-          g.setPointerCapture(e.pointerId);
-          sheet.style.transition = "none";
-          const move = (ev) => {
-            dy = Math.max(0, ev.clientY - y0);
-            sheet.style.transform = `translateY(${dy}px)`;
-          };
-          const up = () => {
-            g.removeEventListener("pointermove", move);
-            g.removeEventListener("pointerup", up);
-            g.removeEventListener("pointercancel", up);
-            if (dy > 110) return Ink.ui.closeSheet();
-            sheet.style.transition = "transform 160ms var(--ease)";
-            sheet.style.transform = "";
-          };
-          g.addEventListener("pointermove", move);
-          g.addEventListener("pointerup", up);
-          g.addEventListener("pointercancel", up);
-        });
-      })();
     </script>
   </body>
 </html>
