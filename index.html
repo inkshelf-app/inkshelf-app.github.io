@@ -422,6 +422,19 @@
       .x-stat__empty { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: 13px; color: var(--txt-2); }
       .x-stat__empty .x-link { min-height: var(--tap); padding: 0 4px; font-size: 13px; }
       @media (max-width: 619px) { #go-stats { display: none; } }
+      .x-chip, .x-select { min-height: var(--tap); }
+      .x-tab:focus-visible, .x-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+      .x-step:disabled { opacity: 0.4; cursor: default; }
+      .x-step[aria-disabled="true"] { opacity: 0.55; }
+      .x-badges { position: absolute; top: 8px; left: 8px; z-index: 2; display: flex; gap: 5px; align-items: center; max-width: calc(100% - 70px); flex-wrap: wrap; }
+      .x-badges .x-badge { position: static; }
+      .x-origin {
+        font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.2;
+        padding: 3px 6px; border-radius: 5px; transform: skewX(-10deg);
+        background: rgba(10,10,11,0.82); border: 1px solid var(--cyan); color: var(--cyan);
+      }
+      .x-flag.is-origin { background: transparent; border: 1px solid var(--cyan); color: var(--cyan); padding: 2px 6px; }
+      .x-caught { position: absolute; left: 8px; bottom: 8px; z-index: 2; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 7px; border-radius: 5px; background: rgba(10,10,11,0.86); border: 1px solid var(--cyan); color: var(--cyan); }
       [hidden] { display: none !important; }
       .x-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       @media (prefers-reduced-motion: reduce) {
@@ -467,10 +480,11 @@
         </div>
         <div class="x-tabs" role="tablist" id="lib-tabs"></div>
         <div class="x-chips" style="margin-top: 14px; align-items: center">
-          <div class="x-chips" id="lib-kind"></div>
+          <div class="x-chips" id="lib-kind" role="group" aria-label="Series type"></div>
           <span class="x-sechead__rule" style="min-width: 10px"></span>
           <label class="x-sr" for="lib-sort">Sort</label>
           <select class="x-select" id="lib-sort">
+            <option value="newest">Newest chapters</option>
             <option value="recent">Recently updated</option>
             <option value="title">Title A to Z</option>
             <option value="progress">Progress</option>
@@ -501,7 +515,7 @@
             </div>
           </div>
           <p style="margin: 10px 2px 0; font-size: 11px; color: var(--txt-3)">
-            Manhwa mode finds Korean webtoons. Light novel mode finds novels.
+            Manhwa mode finds Korean and Chinese webtoons. Light novel mode finds novels.
           </p>
         </div>
         <div id="search-out"></div>
@@ -729,7 +743,8 @@
   });
   const BASE = CONFIG.SUPABASE_URL + "/functions/v1/inkshelf";
   const TIMEOUT = 15000;
-  const CACHE_KEY = "inkshelf.search.v3";
+  const CACHE_KEY = "inkshelf.search.v3:v2";
+  const ORIGINS = { manhwa: "Manhwa", manhua: "Manhua", novel: "Novel" };
   const TTL = 6 * 3600 * 1000;
   const MAX = 60;
 
@@ -849,6 +864,8 @@
       url: r.url || "",
       siteUrl: r.url || "",
     };
+    const origin = ORIGINS[String(r.origin || "").trim().toLowerCase()];
+    if (origin) out.origin = origin;
     out.item_key = r.item_key || keyOf(out);
     return out;
   }
@@ -864,6 +881,8 @@
     const d = Object.assign({}, r);
     delete d.item_key;
     delete d.kind;
+    if (ORIGINS[String(d.origin || "").toLowerCase()]) d.origin = ORIGINS[String(d.origin).toLowerCase()];
+    else delete d.origin;
     d.cover = keepCover(r.cover);
     d.refreshedAt = Date.now();
     return d;
@@ -871,6 +890,7 @@
 
   /* ---------- cache: memory + storage, 6 h, LRU of 60 ---------- */
   const mem = new Map();
+  safeStorage.removeItem("inkshelf.search.v3");
   const readAll = () => {
     try {
       return JSON.parse(safeStorage.getItem(CACHE_KEY) || "{}") || {};
@@ -996,49 +1016,74 @@
   const LABEL = { plan: "Plan", reading: "Reading", completed: "Completed" };
   const PREFS = "inkshelf.prefs";
 
-  const state = { tab: "reading", kind: "all", sort: "recent", filter: "" };
+  const KINDS = ["all", "manhwa", "lightnovel"];
+  const SORTS = ["newest", "recent", "title", "progress"];
+  const KIND_TXT = { all: "series", manhwa: "manhwa", lightnovel: "light novels" };
+  const state = { tab: "reading", kind: "all", sorts: { plan: "recent", reading: "newest", completed: "recent" }, filter: "" };
   try {
-    Object.assign(state, JSON.parse(localStorage.getItem(PREFS) || "{}"));
+    const saved = JSON.parse(localStorage.getItem(PREFS) || "{}") || {};
+    if (Ink.store.STATUSES.includes(saved.tab)) state.tab = saved.tab;
+    if (KINDS.includes(saved.kind)) state.kind = saved.kind;
+    if (saved.sorts && typeof saved.sorts === "object")
+      Ink.store.STATUSES.forEach((s) => {
+        if (SORTS.includes(saved.sorts[s])) state.sorts[s] = saved.sorts[s];
+      });
   } catch (e) {}
-  state.filter = "";
   const savePrefs = () => {
     try {
-      localStorage.setItem(PREFS, JSON.stringify({ tab: state.tab, kind: state.kind, sort: state.sort }));
+      localStorage.setItem(PREFS, JSON.stringify({ tab: state.tab, kind: state.kind, sorts: state.sorts }));
     } catch (e) {}
   };
 
   const unitOf = (it) => (it.kind === "lightnovel" ? it.progress.unit : "chapter");
   const valueOf = (it) => (unitOf(it) === "volume" ? it.progress.volume : it.progress.chapter);
   const pubOf = (d) => d.pubStatus || d.status || "";
+  const ongoing = (d) => {
+    const p = pubOf(d || {});
+    return !!p && ["Ongoing", "Hiatus", "Upcoming"].includes(Ink.ui.fmtStatus(p));
+  };
+  const isManhua = (d, kind) => kind === "manhwa" && !!d && d.origin === "Manhua";
   /** The known final count: total chapters, or volumes once the series is finished. */
   const totalOf = (it) => {
     const d = it.data || {};
+    if (ongoing(d)) return null;
     if (unitOf(it) === "volume") return pubOf(d) === "FINISHED" || !d.muId ? d.totalVolumes || d.volumes || null : null;
-    return d.totalChapters || d.chapters || null;
+    const finished = pubOf(d) && Ink.ui.fmtStatus(pubOf(d)) === "Completed";
+    return d.totalChapters || d.chapters || (finished ? d.latestChapter || d.lastChapter : null) || null;
   };
   /** The latest released count, when no final total is known. */
   const latestOf = (it) => {
     const d = it.data || {};
     return unitOf(it) === "volume" ? d.totalVolumes || d.volumes || null : d.latestChapter || d.lastChapter || null;
   };
+  const limitOf = (it) => totalOf(it) || latestOf(it) || null;
   const pctOf = (it) => {
     const t = totalOf(it) || latestOf(it);
     if (it.status === "completed") return 100;
     return t ? Math.min(100, Math.round((valueOf(it) / t) * 100)) : 0;
   };
+  const freshOf = (it) => {
+    const d = it.data || {};
+    const latest = Number(d.latestChapter || d.lastChapter) || 0;
+    return unitOf(it) === "chapter" && latest > it.progress.chapter ? latest - it.progress.chapter : 0;
+  };
+  const caughtUp = (it) => it.status !== "completed" && ongoing(it.data) && !!latestOf(it) && valueOf(it) >= latestOf(it);
 
   function visible() {
     const f = Ink.api.norm(state.filter);
-    let list = Ink.store.getAll().filter((it) => state.kind === "all" || it.kind === state.kind);
-    const byKind = list.slice();
-    list = list.filter((it) => it.status === state.tab);
+    const all = Ink.store.getAll();
+    const inTab = all.filter((it) => it.status === state.tab);
+    const byKind = all.filter((it) => state.kind === "all" || it.kind === state.kind);
+    let list = byKind.filter((it) => it.status === state.tab);
     if (f) list = list.filter((it) => [it.data.title].concat(it.data.alt || []).some((t) => Ink.api.norm(t).includes(f)));
+    const recent = (a, b) => b.updated_at - a.updated_at;
     const cmp = {
-      recent: (a, b) => b.updated_at - a.updated_at,
+      newest: (a, b) => freshOf(b) - freshOf(a) || recent(a, b),
+      recent,
       title: (a, b) => String(a.data.title).localeCompare(String(b.data.title)),
       progress: (a, b) => pctOf(b) - pctOf(a) || valueOf(b) - valueOf(a),
-    }[state.sort] || ((a, b) => b.updated_at - a.updated_at);
-    return { list: list.sort(cmp), byKind };
+    }[state.sorts[state.tab]] || recent;
+    return { list: list.sort(cmp), byKind, inTab, all };
   }
 
   function card(it) {
@@ -1054,27 +1099,30 @@
     const v = valueOf(it);
     const st = pubOf(d) ? Ink.ui.fmtStatus(pubOf(d)) : "";
     const meta = total ? `${short} ${n(v)} / ${n(total)}` : latest ? `${short} ${n(v)} · latest ${n(latest)}` : `${short} ${n(v)} · ${st || "Ongoing"}`;
-    // New chapters since your progress, on Reading items tracked by chapter.
-    const latestChap = Number(d.latestChapter || d.lastChapter) || 0;
-    const fresh = it.status === "reading" && unit === "chapter" && latestChap > it.progress.chapter ? latestChap - it.progress.chapter : 0;
-    const canGo = it.status !== "completed" && !(total && v >= total);
+    const fresh = it.status === "reading" ? freshOf(it) : 0;
+    const caught = caughtUp(it);
+    const limit = limitOf(it);
+    const atLimit = !!limit && v >= limit;
+    const canGo = it.status !== "completed" && !atLimit;
+    const pct = pctOf(it);
     return `<article class="x-card" data-key="${esc(it.item_key)}" style="--glow:${c};background:linear-gradient(180deg,color-mix(in srgb,${c} 16%,var(--ink-2)),var(--ink-2) 62%)">
   <div class="x-card__media">
     ${Ink.ui.coverImg(d.cover, d.title, d.color, 200, 300)}
-    <span class="x-badge ${isLN ? "is-ln" : "is-manhwa"}">${isLN ? "LN" : "Manhwa"}</span>
+    <span class="x-badges"><span class="x-badge ${isLN ? "is-ln" : "is-manhwa"}">${isLN ? "LN" : "Manhwa"}</span>${isManhua(d, it.kind) ? `<span class="x-origin">Manhua</span>` : ""}</span>
     ${d.score ? `<span class="x-score">★ ${d.score}%</span>` : ""}
     ${fresh ? `<span class="x-new" aria-label="${n(fresh)} new chapters"><b>New</b> +${n(fresh)}</span>` : ""}
+    ${caught ? `<span class="x-caught">Caught up</span>` : ""}
     <button class="x-card__open" data-act="open" aria-label="Details for ${esc(d.title)}"></button>
   </div>
   <div class="x-card__body">
     <div class="x-card__title" title="${esc(d.title)}">${esc(d.title)}</div>
     <div class="x-card__meta">${esc(meta)}${isLN ? ` · <button class="x-unit" data-act="unit" aria-label="Track by ${unit === "volume" ? "chapter" : "volume"}">by ${unit}</button>` : ""}</div>
-    <div class="x-bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pctOf(it)}"><i style="width:${pctOf(it)}%"></i></div>
+    ${total ? `<div class="x-bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>` : ""}
     ${canGo ? `<button class="x-continue" data-act="inc" aria-label="${it.status === "plan" ? "Start" : "Continue"}: mark ${unit} ${n(v + 1)} read">${it.status === "plan" ? "Start" : "Continue"} · ${short} ${n(v + 1)}</button>` : ""}
     <div class="x-prog">
-      <button class="x-step" data-act="dec" aria-label="Minus one ${unit}">−</button>
-      <label class="x-num" style="display:flex;align-items:center"><span class="x-sr">Current ${unit}</span><input data-act="set" type="number" inputmode="numeric" min="0" value="${valueOf(it)}" /></label>
-      <button class="x-step" data-act="inc" aria-label="Plus one ${unit}">+</button>
+      <button class="x-step" data-act="dec" aria-label="Minus one ${unit}"${v <= 0 ? " disabled" : ""}>−</button>
+      <label class="x-num" style="display:flex;align-items:center"><span class="x-sr">Current ${unit}${limit ? `, up to ${n(limit)}` : ""}</span><input data-act="set" type="number" inputmode="numeric" min="0"${limit ? ` max="${limit}"` : ""} value="${v}" /></label>
+      <button class="x-step" data-act="inc" aria-label="Plus one ${unit}"${atLimit ? ` aria-disabled="true"` : ""}>+</button>
     </div>
     <div class="x-card__acts">
       <button class="x-mini" data-act="move" aria-haspopup="menu">Move to</button>
@@ -1086,23 +1134,25 @@
 
   function render() {
     const esc = Ink.ui.esc;
-    const { list, byKind } = visible();
-    const all = Ink.store.getAll();
+    const { list, byKind, inTab, all } = visible();
+    const n = Ink.ui.num;
     const cnt = (s) => byKind.filter((it) => it.status === s).length;
 
-    $("#lib-count").textContent = `${Ink.ui.num(all.length)} series`;
-    $("#lib-tabs").innerHTML = Ink.store.STATUSES.map(
-      (s) => `<button class="x-tab" role="tab" data-tab="${s}" aria-selected="${state.tab === s}">${LABEL[s]}<em>${Ink.ui.num(cnt(s))}</em></button>`
-    ).join("");
-    const kc = { all: all.length, manhwa: all.filter((i) => i.kind === "manhwa").length, lightnovel: all.filter((i) => i.kind === "lightnovel").length };
+    $("#lib-count").textContent = `${n(all.length)} series`;
+    $("#lib-tabs").innerHTML = Ink.store.STATUSES.map((s) => {
+      const on = state.tab === s;
+      return `<button class="x-tab" type="button" role="tab" id="lib-tab-${s}" aria-controls="lib-grid" data-tab="${s}" aria-selected="${on}" tabindex="${on ? 0 : -1}" aria-label="${LABEL[s]}, ${n(cnt(s))} ${state.kind === "all" ? "series" : KIND_TXT[state.kind]}">${LABEL[s]}<em aria-hidden="true">${n(cnt(s))}</em></button>`;
+    }).join("");
+    const kc = { all: inTab.length, manhwa: inTab.filter((i) => i.kind === "manhwa").length, lightnovel: inTab.filter((i) => i.kind === "lightnovel").length };
     $("#lib-kind").innerHTML = [
-      ["all", "All"],
-      ["manhwa", "Manhwa"],
-      ["lightnovel", "LN"],
+      ["all", "All", "All series"],
+      ["manhwa", "Manhwa", "Manhwa"],
+      ["lightnovel", "LN", "Light novels"],
     ]
-      .map(([k, l]) => `<button class="x-chip" data-kind="${k}" aria-pressed="${state.kind === k}">${l} · ${Ink.ui.num(kc[k])}</button>`)
+      .map(([k, l, full]) => `<button class="x-chip" type="button" data-kind="${k}" aria-pressed="${state.kind === k}" aria-label="${full}, ${n(kc[k])} in ${LABEL[state.tab]}">${l} · ${n(kc[k])}</button>`)
       .join("");
-    $("#lib-sort").value = state.sort;
+    $("#lib-sort").value = state.sorts[state.tab];
+    $("#lib-grid").setAttribute("aria-labelledby", "lib-tab-" + state.tab);
 
     $("#lib-grid").innerHTML = list.map(card).join("");
     const empty = $("#lib-empty");
@@ -1110,14 +1160,36 @@
       empty.innerHTML = "";
       return;
     }
+    const tab = LABEL[state.tab];
+    const what = KIND_TXT[state.kind];
     let title = "Your shelf is empty";
     let text = "Search a manhwa or light novel and add it to start tracking chapters.";
+    let clear = "";
     if (all.length && state.filter) {
       title = "Nothing matches";
-      text = `No ${LABEL[state.tab].toLowerCase()} series match “${state.filter}”.`;
+      text = `No ${what} in ${tab} match “${state.filter}”.`;
+      clear = "filter";
+    } else if (all.length && state.kind !== "all" && !byKind.length) {
+      title = `No ${what} yet`;
+      text = `Your shelf has no ${what}. Search to add one, or show all series.`;
+      clear = "kind";
+    } else if (all.length && state.kind !== "all" && inTab.length) {
+      title = `No ${what} in ${tab}`;
+      text = `${n(inTab.length)} other ${inTab.length === 1 ? "series is" : "series are"} in ${tab}. Show all series to see ${inTab.length === 1 ? "it" : "them"}.`;
+      clear = "kind";
     } else if (all.length) {
-      title = `Nothing in ${LABEL[state.tab]}`;
-      text = state.tab === "reading" ? "Start a series from Plan, or find a new one." : state.tab === "completed" ? "Finished series land here." : "Save series you want to read later.";
+      title = `Nothing in ${tab}`;
+      text =
+        state.tab === "reading"
+          ? "Press Start on a series in Plan, or find a new one."
+          : state.tab === "completed"
+          ? "Finished series land here. Ongoing series stay in Reading."
+          : "Save series you want to read later.";
+    }
+    if (clear) {
+      empty.innerHTML = `<div class="x-empty"><div class="x-bubble"><h3>${esc(title)}</h3><p>${esc(text)}</p></div>
+      <div class="x-btns" style="justify-content:center;margin-top:26px"><button class="x-btn is-primary" data-act="clear-${clear}">${clear === "filter" ? "Clear filter" : "Show all series"}</button><button class="x-btn" data-act="find">Find a series</button></div></div>`;
+      return;
     }
     empty.innerHTML = `<div class="x-empty"><div class="x-bubble"><h3>${esc(title)}</h3><p>${esc(text)}</p></div>
       <div class="x-btns" style="justify-content:center;margin-top:26px"><button class="x-btn is-primary" data-act="find">Find a series</button></div></div>`;
@@ -1129,29 +1201,65 @@
     if (!it) return;
     const unit = unitOf(it);
     const total = totalOf(it);
+    const limit = limitOf(it);
+    const before = valueOf(it);
+    const title = it.data.title;
+    const n = Ink.ui.num;
     let v = Math.max(0, Math.floor(Number(value) || 0));
-    if (total && v > total) v = total;
+    if (limit && v > limit) {
+      v = limit;
+      Ink.ui.toast(
+        total
+          ? `“${title}” has ${n(total)} ${unit}s, so progress stops at ${n(total)}.`
+          : `The latest ${unit} of “${title}” is ${n(limit)}. If a newer one is out, use Move to, then Update details.`,
+        { timeout: 6000 }
+      );
+      if (v === before) {
+        render();
+        return;
+      }
+    }
+    if (v === before) return render();
     const progress = Object.assign({}, it.progress, { [unit]: v });
     const patch = { item_key: key, progress };
     if (it.status === "plan" && v > 0) {
       patch.status = "reading";
-      Ink.ui.toast(`Moved “${it.data.title}” to Reading`);
+      Ink.ui.toast(`Moved “${title}” to Reading`, {
+        action: "Undo",
+        onAction: () => Ink.store.saveItem({ item_key: key, status: it.status, progress: it.progress }),
+      });
     }
     Ink.store.saveItem(patch);
-    if (total && v >= total && it.status !== "completed") {
-      Ink.ui.toast(`That's the last ${unit} of “${it.data.title}”. Mark it completed?`, {
-        action: "Mark completed",
+    if (it.status === "completed") return;
+    if (total && v >= total && before < total) {
+      Ink.ui.toast(`That's the last ${unit} of “${title}”. Move it to Completed?`, {
+        action: "Move to Completed",
         timeout: 8000,
         onAction: () => move(key, "completed"),
       });
+    } else if (!total && ongoing(it.data) && limit && v >= limit && before < limit) {
+      Ink.ui.toast(`You're caught up on “${title}”. It stays in Reading until it ends.`);
     }
   }
 
   function move(key, status) {
     const it = Ink.store.get(key);
     if (!it || it.status === status) return;
-    Ink.store.saveItem({ item_key: key, status });
-    Ink.ui.toast(`“${it.data.title}” → ${LABEL[status]}`, { action: "Undo", onAction: () => Ink.store.saveItem({ item_key: key, status: it.status }) });
+    const title = it.data.title;
+    if (status === "completed" && ongoing(it.data)) {
+      const st = Ink.ui.fmtStatus(pubOf(it.data));
+      Ink.ui.toast(`“${title}” is still ${st === "Hiatus" ? "on hiatus" : st.toLowerCase()}, so it can't be completed yet.`, { timeout: 6000 });
+      return;
+    }
+    const patch = { item_key: key, status };
+    const total = totalOf(it);
+    if (status === "completed" && total && valueOf(it) < total) patch.progress = Object.assign({}, it.progress, { [unitOf(it)]: total });
+    Ink.store.saveItem(patch);
+    Ink.ui.toast(`Moved “${title}” to ${LABEL[status]}`, {
+      action: "Undo",
+      timeout: 7000,
+      onAction: () => Ink.store.saveItem({ item_key: key, status: it.status, progress: it.progress }),
+    });
   }
 
   function remove(key) {
@@ -1190,7 +1298,7 @@
 
   function openMove(btn, key) {
     const it = Ink.store.get(key);
-    const opts = Ink.store.STATUSES.filter((s) => s !== it.status).map((s) => ({ label: `Move to ${LABEL[s]}`, onClick: () => move(key, s) }));
+    const opts = Ink.store.STATUSES.filter((s) => s !== it.status && !(s === "completed" && ongoing(it.data))).map((s) => ({ label: `Move to ${LABEL[s]}`, onClick: () => move(key, s) }));
     opts.push("hr", { label: "Update details", onClick: () => refresh(key) });
     opts.push("hr", { label: "Remove from shelf", onClick: () => remove(key) });
     Ink.ui.openMenu(btn, opts);
@@ -1203,6 +1311,21 @@
       state.tab = b.dataset.tab;
       savePrefs();
       render();
+      const t = $("#lib-tab-" + state.tab);
+      if (t) t.focus();
+    });
+    $("#lib-tabs").addEventListener("keydown", (e) => {
+      const keys = { ArrowRight: 1, ArrowLeft: -1, Home: "first", End: "last" };
+      if (!(e.key in keys) || !e.target.closest("[data-tab]")) return;
+      e.preventDefault();
+      const S = Ink.store.STATUSES;
+      const i = S.indexOf(state.tab);
+      const k = keys[e.key];
+      state.tab = k === "first" ? S[0] : k === "last" ? S[S.length - 1] : S[(i + k + S.length) % S.length];
+      savePrefs();
+      render();
+      const t = $("#lib-tab-" + state.tab);
+      if (t) t.focus();
     });
     $("#lib-kind").addEventListener("click", (e) => {
       const b = e.target.closest("[data-kind]");
@@ -1210,9 +1333,11 @@
       state.kind = b.dataset.kind;
       savePrefs();
       render();
+      const c = $(`#lib-kind [data-kind="${state.kind}"]`);
+      if (c) c.focus();
     });
     $("#lib-sort").addEventListener("change", (e) => {
-      state.sort = e.target.value;
+      if (SORTS.includes(e.target.value)) state.sorts[state.tab] = e.target.value;
       savePrefs();
       render();
     });
@@ -1221,7 +1346,19 @@
       render();
     });
     $("#lib-empty").addEventListener("click", (e) => {
-      if (e.target.closest('[data-act="find"]')) Ink.main.show("search");
+      const b = e.target.closest("[data-act]");
+      if (!b) return;
+      if (b.dataset.act === "find") Ink.main.show("search");
+      else if (b.dataset.act === "clear-filter") {
+        state.filter = "";
+        $("#lib-filter").value = "";
+        render();
+        $("#lib-filter").focus();
+      } else if (b.dataset.act === "clear-kind") {
+        state.kind = "all";
+        savePrefs();
+        render();
+      }
     });
 
     const grid = $("#lib-grid");
@@ -1283,6 +1420,9 @@
       savePrefs();
       render();
     },
+    move,
+    ongoing,
+    isManhua,
     LABEL,
   };
 })();
@@ -1346,7 +1486,9 @@
     );
   }
 
-  const flag = (k) => (k === "lightnovel" ? `<span class="x-flag is-ln">LN</span>` : `<span class="x-flag is-manhwa">Manhwa</span>`);
+  const flag = (k, r) =>
+    (k === "lightnovel" ? `<span class="x-flag is-ln">LN</span>` : `<span class="x-flag is-manhwa">Manhwa</span>`) +
+    (r && Ink.library.isManhua(r, k) ? `<span class="x-flag is-origin">Manhua</span>` : "");
   const statusPill = (r) => (pub(r) ? `<span class="x-stp ${STCLS[pub(r)] || ""}">${Ink.ui.esc(Ink.ui.fmtStatus(pub(r)))}</span>` : "");
 
   /** "2,060 chapters" or "Latest ch. 1,275", plus "96 vols" for light novels. */
@@ -1390,7 +1532,7 @@
     return `<button class="x-row" data-i="${i}" type="button">
   <span class="x-row__cover">${Ink.ui.coverImg(r.cover, r.title, r.color, 64, 96)}</span>
   <span class="x-row__main">
-    <span class="x-row__flags">${flag(r.kind || kind)}${statusPill(r)}${on ? `<span class="x-stp is-shelf">${esc(Ink.library.LABEL[on.status])}</span>` : ""}</span>
+    <span class="x-row__flags">${flag(r.kind || kind, r)}${statusPill(r)}${on ? `<span class="x-stp is-shelf">${esc(Ink.library.LABEL[on.status])}</span>` : ""}</span>
     <span class="x-row__t">${esc(r.title)}</span>${subOf(r) ? `
     <span class="x-row__s">${esc(subOf(r))}</span>` : ""}${facts.length ? `
     <span class="x-row__s">${esc(facts.join(" · "))}</span>` : ""}
@@ -1475,7 +1617,8 @@
     const authors = (r.authors || []).filter(Boolean);
     const tint = /^#[0-9a-f]{3,8}$/i.test(r.color || "") ? r.color : k === "lightnovel" ? "#f59e0b" : "#22d3ee";
     const bgUrl = (u) => `url(&quot;${esc(String(u).replace(/["\\\n]/g, encodeURIComponent))}&quot;)`;
-    const statusBtns = Ink.store.STATUSES.map((s) => {
+    const live = Ink.library.ongoing((on && on.data) || r) || Ink.library.ongoing(r);
+    const statusBtns = Ink.store.STATUSES.filter((s) => !(s === "completed" && live && !(on && on.status === s))).map((s) => {
       const label = on ? (on.status === s ? `✓ ${Ink.library.LABEL[s]}` : `Move to ${Ink.library.LABEL[s]}`) : { plan: "Add to Plan", reading: "Start reading", completed: "Mark completed" }[s];
       const primary = !on && s === "reading" ? " is-primary" : "";
       return `<button class="x-btn${primary}" data-add="${s}" aria-pressed="${!!on && on.status === s}">${label}</button>`;
@@ -1487,7 +1630,7 @@
   <div class="x-sheet__in">
     <div class="x-sheet__head">
       <span class="x-sheet__cover">${Ink.ui.coverImg(r.cover, r.title, r.color, 92, 138, true)}</span>
-      <div style="min-width:0">${flag(k)}<h2 id="sheet-title" style="margin-top:6px">${esc(r.title)}</h2>${native ? `<p class="x-row__s" style="margin:4px 0 0">${esc(native)}</p>` : ""}${
+      <div style="min-width:0"><span class="x-row__flags">${flag(k, r)}</span><h2 id="sheet-title" style="margin-top:6px">${esc(r.title)}</h2>${native ? `<p class="x-row__s" style="margin:4px 0 0">${esc(native)}</p>` : ""}${
       authors.length ? `<p class="x-row__s" style="margin:4px 0 0">By ${esc(authors.join(", "))}</p>` : ""
     }</div>
     </div>
@@ -1519,8 +1662,9 @@
   function add(r, status, k) {
     const cur = onShelf(r);
     if (cur) {
-      if (cur.status !== status) Ink.store.saveItem({ item_key: cur.item_key, status });
-      Ink.ui.toast(`“${r.title}” → ${Ink.library.LABEL[status]}`);
+      if (r.origin && !cur.data.origin) Ink.store.saveItem({ item_key: cur.item_key, data: { origin: r.origin }, updated_at: cur.updated_at, keepTime: true });
+      if (cur.status !== status) Ink.library.move(cur.item_key, status);
+      else Ink.ui.toast(`“${r.title}” is already in ${Ink.library.LABEL[status]}`);
       if (results.length) renderResults({ results, errors: [] }, lastQ);
       return;
     }
