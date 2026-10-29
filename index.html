@@ -413,7 +413,7 @@
         <div class="x-sechead">
           <span class="x-sechead__tag is-red">Search</span>
           <span class="x-sechead__rule"></span>
-          <span class="x-sechead__note">anilist · mangadex · jikan</span>
+          <span class="x-sechead__note">live search</span>
         </div>
         <div class="x-panel" style="padding: 12px">
           <div class="x-searchrow">
@@ -632,28 +632,34 @@
   };
 })();
 /* ============ INKSHELF · api.js ============
-   AniList (primary), MangaDex (covers, last chapter), Jikan (optional).
-   All sources run in parallel with timeouts; results are merged,
-   de-duplicated and fuzzy-ranked. */
+   Every lookup goes through the app's own Supabase backend
+   (Postgres RPCs, live server-side search, nothing stored):
+     search_series  {q, kind}  → {mu:[...], al:[...], errors:[...]}
+     series_details {mu_id}    → one MangaUpdates series in full
+   MangaUpdates is primary; AniList entries are matched onto it by
+   title for covers, colors and counts. Results are already filtered to
+   the chosen kind server-side, and are never widened to the other kind. */
 (function () {
   const Ink = (window.Ink = window.Ink || {});
-  const AL = "https://graphql.anilist.co";
-  const MD = "https://api.mangadex.org";
-  const JK = "https://api.jikan.moe/v4";
+  const CONFIG = (Ink.CONFIG = Ink.CONFIG || {
+    SUPABASE_URL: "https://dqrbdwahwetzramtyznw.supabase.co",
+    SUPABASE_KEY: "sb_publishable_odBpCQOBmT1YY3j8o903ZA_kTPtUQW2",
+  });
+  const TIMEOUT = 12000;
+  const CACHE_KEY = "inkshelf.search.v2";
 
-  const FIELDS = `id idMal title{romaji english native userPreferred} synonyms format countryOfOrigin status chapters volumes averageScore genres description(asHtml:false) coverImage{extraLarge large color} bannerImage siteUrl startDate{year}`;
-  const Q_FILTERED = `query($s:String,$f:[MediaFormat],$c:CountryCode){Page(perPage:20){media(search:$s,type:MANGA,format_in:$f,countryOfOrigin:$c,sort:SEARCH_MATCH,isAdult:false){${FIELDS}}}}`;
-  const Q_NOVEL = `query($s:String,$f:[MediaFormat]){Page(perPage:20){media(search:$s,type:MANGA,format_in:$f,sort:SEARCH_MATCH,isAdult:false){${FIELDS}}}}`;
-  const Q_ANY = `query($s:String){Page(perPage:20){media(search:$s,type:MANGA,sort:SEARCH_MATCH,isAdult:false){${FIELDS}}}}`;
-  const Q_ID = `query($id:Int){Media(id:$id,type:MANGA){${FIELDS}}}`;
-
-  /* ---------- helpers ---------- */
-  function fetchJSON(url, opts, ms, outer) {
+  /* ---------- transport ---------- */
+  function rpc(name, body, outer) {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), ms);
+    const timer = setTimeout(() => ctrl.abort(), TIMEOUT);
     const onOuter = () => ctrl.abort();
     if (outer) outer.addEventListener("abort", onOuter);
-    return fetch(url, Object.assign({}, opts, { signal: ctrl.signal }))
+    return fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/${name}`, {
+      method: "POST",
+      headers: { apikey: CONFIG.SUPABASE_KEY, "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(body),
+      signal: ctrl.signal,
+    })
       .then((r) => {
         if (!r.ok) throw new Error("HTTP " + r.status);
         return r.json();
@@ -664,6 +670,9 @@
       });
   }
 
+  const abortErr = () => new DOMException("aborted", "AbortError");
+
+  /* ---------- text helpers ---------- */
   const norm = (s) =>
     String(s || "")
       .toLowerCase()
@@ -672,15 +681,41 @@
       .replace(/[^\p{L}\p{N}]+/gu, " ")
       .trim();
 
-  const stripHtml = (s) =>
+  /** "Solo Leveling (Novel)" → "Solo Leveling" */
+  const cleanTitle = (s) =>
     String(s || "")
-      .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<[^>]+>/g, "")
+      .replace(/\s*\((?:light\s+)?novel\)/gi, "")
+      .trim();
+
+  const decode = (s) =>
+    s
       .replace(/&quot;/g, '"')
-      .replace(/&amp;/g, "&")
-      .replace(/&#039;/g, "'")
+      .replace(/&#0?39;|&apos;/g, "'")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&");
+
+  /** Plain text: no HTML, no markdown or BBCode links, no "Original Novel:" links block. */
+  function cleanDesc(s) {
+    let t = String(s || "")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/p>/gi, "\n\n");
+    const cut = t.search(/(?:\*\*|__|<b>|\[b\])?\s*original\s+(?:web\s*)?novels?\s*:/i);
+    if (cut > 0) t = t.slice(0, cut);
+    t = t
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+      .replace(/\[([^\]]+)\]\((?:https?:)?[^)]*\)/g, "$1")
+      .replace(/\[url=[^\]]*\]([\s\S]*?)\[\/url\]/gi, "$1")
+      .replace(/\[\/?[a-z]+(?:=[^\]]*)?\]/gi, "")
+      .replace(/<[^>]+>/g, "")
+      .replace(/(\*\*|__)(.*?)\1/g, "$2")
+      .replace(/https?:\/\/\S+/g, "");
+    return decode(t)
+      .replace(/[ \t]+\n/g, "\n")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
+  }
 
   function bigrams(s) {
     const out = new Map();
@@ -720,26 +755,63 @@
     return s.length >= 2 ? s : norm(q);
   }
 
-  function kindOf(format, country, fallback) {
-    if (format === "NOVEL" || format === "LIGHT_NOVEL" || format === "lightnovel" || format === "novel") return "lightnovel";
-    if (country === "KR" || country === "ko" || format === "manhwa") return "manhwa";
-    return fallback;
-  }
+  const uniq = (list) => {
+    const seen = new Set();
+    return list.filter((t) => {
+      const k = norm(t);
+      if (!t || !k || seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  };
 
   /* ---------- sources ---------- */
-  function fromAniList(m, fallbackKind) {
+  function fromMU(m, kind) {
+    const title = cleanTitle(m.title);
+    const hit = cleanTitle(m.hit_title);
+    const rating = Number(m.rating);
+    return {
+      source: "mangaupdates",
+      muId: String(m.mu_id),
+      anilistId: null,
+      malId: null,
+      title,
+      sub: hit && norm(hit) !== norm(title) ? hit : "",
+      alt: uniq([title, hit]),
+      cover: m.cover || "",
+      color: "",
+      banner: "",
+      kind,
+      format: m.type === "Novel" ? "NOVEL" : m.type ? String(m.type).toUpperCase() : "",
+      country: m.type === "Manhwa" ? "KR" : "",
+      status: "",
+      chapters: null,
+      volumes: null,
+      lastChapter: null,
+      score: rating > 0 ? Math.round(rating * 10) : null,
+      votes: Number(m.votes) || 0,
+      genres: m.genres || [],
+      desc: cleanDesc(m.description),
+      url: m.url || "",
+      year: Number(m.year) || null,
+    };
+  }
+
+  function fromAniList(m, kind) {
     const t = m.title || {};
+    const title = cleanTitle(t.english || t.romaji || t.native);
     return {
       source: "anilist",
+      muId: null,
       anilistId: m.id,
       malId: m.idMal || null,
-      mdId: null,
-      title: t.english || t.userPreferred || t.romaji || t.native,
-      alt: [t.romaji, t.english, t.native, t.userPreferred].concat(m.synonyms || []).filter(Boolean),
-      cover: (m.coverImage && (m.coverImage.extraLarge || m.coverImage.large)) || "",
+      title,
+      sub: "",
+      alt: uniq([title, t.romaji, t.english, t.native].concat(m.synonyms || []).map(cleanTitle)),
+      cover: (m.coverImage && m.coverImage.extraLarge) || "",
       color: (m.coverImage && m.coverImage.color) || "",
       banner: m.bannerImage || "",
-      kind: kindOf(m.format, m.countryOfOrigin, fallbackKind),
+      kind,
       format: m.format || "",
       country: m.countryOfOrigin || "",
       status: m.status || "",
@@ -747,202 +819,256 @@
       volumes: m.volumes || null,
       lastChapter: null,
       score: m.averageScore || null,
+      votes: 0,
       genres: m.genres || [],
-      desc: stripHtml(m.description),
+      desc: "",
       url: m.siteUrl || "",
       year: (m.startDate && m.startDate.year) || null,
     };
   }
 
-  async function anilist(q, kind, relaxed, signal) {
-    let query = Q_ANY;
-    let variables = { s: q };
-    if (!relaxed && kind === "manhwa") {
-      query = Q_FILTERED;
-      variables = { s: q, f: ["MANGA", "ONE_SHOT"], c: "KR" };
-    } else if (!relaxed) {
-      query = Q_NOVEL;
-      variables = { s: q, f: ["NOVEL"] };
-    }
-    const json = await fetchJSON(
-      AL,
-      { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ query, variables }) },
-      8000,
-      signal
-    );
-    if (json.errors && !json.data) throw new Error(json.errors[0].message);
-    return ((json.data && json.data.Page && json.data.Page.media) || []).map((m) => fromAniList(m, kind));
-  }
-
-  async function mangadex(q, kind, relaxed, signal) {
-    let url = `${MD}/manga?title=${encodeURIComponent(q)}&limit=20&includes[]=cover_art&order[relevance]=desc&contentRating[]=safe&contentRating[]=suggestive`;
-    if (kind === "manhwa" && !relaxed) url += "&originalLanguage[]=ko";
-    const json = await fetchJSON(url, {}, 7000, signal);
-    return (json.data || []).map((d) => {
-      const a = d.attributes || {};
-      const pick = (o) => (o ? o.en || o["ko-ro"] || o["ja-ro"] || o.ko || Object.values(o)[0] : "");
-      const altTitles = (a.altTitles || []).map(pick).filter(Boolean);
-      const art = (d.relationships || []).find((r) => r.type === "cover_art");
-      const file = art && art.attributes && art.attributes.fileName;
-      const lang = a.originalLanguage;
-      return {
-        source: "mangadex",
-        anilistId: a.links && a.links.al ? Number(a.links.al) || null : null,
-        malId: a.links && a.links.mal ? Number(a.links.mal) || null : null,
-        mdId: d.id,
-        title: pick(a.title),
-        alt: [pick(a.title)].concat(altTitles),
-        cover: file ? `https://uploads.mangadex.org/covers/${d.id}/${file}.512.jpg` : "",
-        color: "",
-        banner: "",
-        kind: lang === "ko" ? "manhwa" : kind,
-        format: lang === "ko" ? "MANHWA" : (lang || "").toUpperCase(),
-        country: lang === "ko" ? "KR" : "",
-        status: (a.status || "").toUpperCase(),
-        chapters: null,
-        volumes: a.lastVolume ? Number(a.lastVolume) || null : null,
-        lastChapter: a.lastChapter ? Number(a.lastChapter) || null : null,
-        score: null,
-        genres: (a.tags || []).filter((t) => t.attributes && t.attributes.group === "genre").map((t) => pick(t.attributes.name)).slice(0, 6),
-        desc: stripHtml(pick(a.description)),
-        url: `https://mangadex.org/title/${d.id}`,
-        year: a.year || null,
-      };
-    });
-  }
-
-  async function jikan(q, kind, relaxed, signal) {
-    let url = `${JK}/manga?q=${encodeURIComponent(q)}&limit=15&sfw=true`;
-    if (!relaxed) url += kind === "manhwa" ? "&type=manhwa" : "&type=lightnovel";
-    const json = await fetchJSON(url, {}, 5000, signal);
-    return (json.data || []).map((m) => ({
-      source: "jikan",
-      anilistId: null,
-      malId: m.mal_id,
-      mdId: null,
-      title: m.title_english || m.title,
-      alt: [m.title, m.title_english, m.title_japanese].concat((m.titles || []).map((t) => t.title)).filter(Boolean),
-      cover: (m.images && m.images.jpg && (m.images.jpg.large_image_url || m.images.jpg.image_url)) || "",
-      color: "",
-      banner: "",
-      kind: kindOf((m.type || "").toLowerCase().replace(/\s/g, ""), "", kind),
-      format: (m.type || "").toUpperCase(),
-      country: (m.type || "").toLowerCase() === "manhwa" ? "KR" : "",
-      status: (m.status || "").toUpperCase(),
-      chapters: m.chapters || null,
-      volumes: m.volumes || null,
-      lastChapter: null,
-      score: m.score ? Math.round(m.score * 10) : null,
-      genres: (m.genres || []).map((g) => g.name),
-      desc: stripHtml(m.synopsis),
-      url: m.url || "",
-      year: (m.published && m.published.prop && m.published.prop.from && m.published.prop.from.year) || null,
-    }));
-  }
-
-  /* ---------- merge, rank, search ---------- */
+  /* ---------- merge, rank ---------- */
   function keyOf(r) {
-    if (r.anilistId) return "al:" + r.anilistId;
+    if (r.muId) return "mu:" + r.muId;
+    if (r.anilistId) return "anilist:" + r.anilistId;
     if (r.malId) return "mal:" + r.malId;
     return "md:" + r.mdId;
   }
 
-  function mergeInto(a, b) {
-    Object.keys(b).forEach((k) => {
-      if (k === "alt") a.alt = Array.from(new Set(a.alt.concat(b.alt)));
-      else if (k === "genres") a.genres = a.genres.length ? a.genres : b.genres;
-      else if (a[k] == null || a[k] === "") a[k] = b[k];
-    });
-    if (b.source === "mangadex" && b.cover && !a.cover) a.cover = b.cover;
-    a.sources = Array.from(new Set((a.sources || [a.source]).concat(b.source)));
+  /** Every key an item may already be saved under (old al:/mal: keys included). */
+  function keysOf(r) {
+    const out = [];
+    if (r.item_key) out.push(r.item_key);
+    if (r.muId) out.push("mu:" + r.muId);
+    if (r.anilistId) out.push("anilist:" + r.anilistId, "al:" + r.anilistId);
+    if (r.malId) out.push("mal:" + r.malId);
+    if (r.mdId) out.push("md:" + r.mdId);
+    return Array.from(new Set(out));
   }
 
-  function dedupe(list) {
-    const out = [];
-    list.forEach((r) => {
-      const titles = new Set(r.alt.map(norm).filter((t) => t.length > 2));
-      const hit = out.find(
-        (o) =>
-          (r.anilistId && o.anilistId === r.anilistId) ||
-          (r.malId && o.malId === r.malId) ||
-          (r.mdId && o.mdId === r.mdId) ||
-          (!(r.anilistId && o.anilistId) && o.alt.some((t) => titles.has(norm(t))))
-      );
-      if (hit) mergeInto(hit, r);
-      else out.push(Object.assign({ sources: [r.source] }, r));
+  function merge(mu, al) {
+    const out = mu.map((r) => Object.assign({ sources: ["mangaupdates"] }, r));
+    al.forEach((a) => {
+      const titles = new Set(a.alt.map(norm).filter((t) => t.length > 1));
+      const hit = out.find((o) => !o.anilistId && o.muId && o.alt.some((t) => titles.has(norm(t))));
+      if (!hit) {
+        // Same title as an entry already shown: it's a duplicate listing, skip it.
+        if (out.some((o) => o.alt.some((t) => titles.has(norm(t))))) return;
+        out.push(Object.assign({ sources: ["anilist"] }, a));
+        return;
+      }
+      hit.anilistId = a.anilistId;
+      hit.malId = a.malId;
+      if (a.cover) hit.cover = a.cover;
+      hit.color = a.color || hit.color;
+      hit.banner = a.banner || hit.banner;
+      hit.chapters = a.chapters || hit.chapters;
+      hit.volumes = a.volumes || hit.volumes;
+      hit.score = a.score || hit.score;
+      hit.status = a.status || hit.status;
+      hit.year = hit.year || a.year;
+      if (!hit.genres.length) hit.genres = a.genres;
+      hit.alt = uniq(hit.alt.concat(a.alt));
+      hit.sources.push("anilist");
     });
     out.forEach((r) => (r.item_key = keyOf(r)));
     return out;
   }
 
-  function rank(list, q, kind) {
-    const order = { anilist: 6, jikan: 3, mangadex: 2 };
+  function rank(list, q) {
     list.forEach((r) => {
-      const best = Math.max(0, ...r.alt.concat(r.title).map((t) => titleScore(q, t)));
-      r._score = best + (r.kind === kind ? 8 : 0) + (order[r.source] || 0) + Math.min(6, (r.sources.length - 1) * 3) + (r.score ? r.score / 25 : 0) - Math.min(6, Math.max(0, norm(r.title).length - norm(q).length) / 10);
+      const best = Math.max(0, ...r.alt.concat(r.title, r.sub || "").map((t) => titleScore(q, t)));
       r._match = best;
+      r._score =
+        best +
+        (r.muId ? 4 : 0) +
+        (r.sources.length > 1 ? 4 : 0) +
+        Math.min(6, Math.log10(1 + (r.votes || 0)) * 2) +
+        (r.score ? r.score / 25 : 0) -
+        Math.min(6, Math.max(0, norm(r.title).length - norm(q).length) / 10);
     });
-    return list.filter((r) => r._match >= 25 || r.sources.includes("anilist")).sort((a, b) => b._score - a._score);
+    return list.sort((a, b) => b._score - a._score);
   }
 
-  async function runOnce(q, kind, relaxed, signal) {
-    const jobs = [
-      ["AniList", anilist(q, kind, relaxed, signal)],
-      ["MangaDex", mangadex(q, kind, relaxed, signal)],
-      ["Jikan", jikan(q, kind, relaxed, signal)],
-    ];
-    const settled = await Promise.allSettled(jobs.map((j) => j[1]));
-    const errors = [];
-    let all = [];
-    settled.forEach((s, i) => {
-      if (s.status === "fulfilled") all = all.concat(s.value);
-      else errors.push(jobs[i][0]);
-    });
-    let merged = dedupe(all);
-    // MangaDex hosts comics only: in LN mode a MangaDex-only hit is an adaptation, not the novel.
-    if (kind === "lightnovel") merged = merged.filter((r) => !(r.sources.length === 1 && r.sources[0] === "mangadex"));
-    return { results: rank(merged, q, kind), errors };
+  // Server already filters by kind; this only guards against stray rows.
+  const muFits = (m, kind) => !m.type || (kind === "lightnovel" ? m.type === "Novel" : m.type === "Manhwa");
+  const alFits = (m, kind) => !m.format || (kind === "lightnovel" ? m.format === "NOVEL" : m.format !== "NOVEL");
+
+  /* ---------- session cache ---------- */
+  const mem = new Map();
+  function cacheGet(k) {
+    if (mem.has(k)) return mem.get(k);
+    try {
+      const all = JSON.parse(sessionStorage.getItem(CACHE_KEY) || "{}");
+      if (all[k]) {
+        mem.set(k, all[k]);
+        return all[k];
+      }
+    } catch (e) {}
+    return null;
+  }
+  function cacheSet(k, v) {
+    mem.set(k, v);
+    try {
+      const all = JSON.parse(sessionStorage.getItem(CACHE_KEY) || "{}");
+      all[k] = v;
+      const keys = Object.keys(all);
+      if (keys.length > 40) keys.slice(0, keys.length - 40).forEach((x) => delete all[x]);
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(all));
+    } catch (e) {}
+  }
+
+  async function once(q, kind, signal) {
+    const ck = kind + "|" + norm(q);
+    const hit = cacheGet(ck);
+    if (hit) return { results: hit.map((r) => Object.assign({}, r)), errors: [] };
+    const json = (await rpc("search_series", { q, kind }, signal)) || {};
+    const mu = (json.mu || []).filter((m) => muFits(m, kind)).map((m) => fromMU(m, kind));
+    const al = (json.al || []).filter((m) => alFits(m, kind)).map((m) => fromAniList(m, kind));
+    const results = rank(merge(mu, al), q);
+    const errors = json.errors || [];
+    if (results.length || !errors.length) cacheSet(ck, results);
+    return { results, errors };
   }
 
   /**
    * search(q, kind, {signal, onStage}) → {results, errors, stage}
-   * Stages: exact query → simplified query → relaxed type filter.
+   * Stages: exact query → simplified query (only when the first is empty).
    */
   async function search(q, kind, opts) {
     const signal = opts && opts.signal;
     const onStage = (opts && opts.onStage) || function () {};
     const errs = new Set();
     const stages = [
-      { q, relaxed: false, name: "exact" },
-      { q: simplify(q), relaxed: false, name: "simplified" },
-      { q: simplify(q), relaxed: true, name: "relaxed" },
-    ].filter((s, i, arr) => i === 0 || s.q !== arr[i - 1].q || s.relaxed !== arr[i - 1].relaxed);
+      { q, name: "exact" },
+      { q: simplify(q), name: "simplified" },
+    ].filter((s, i, arr) => i === 0 || norm(s.q) !== norm(arr[0].q));
     for (const st of stages) {
-      if (signal && signal.aborted) throw new DOMException("aborted", "AbortError");
+      if (signal && signal.aborted) throw abortErr();
       onStage(st.name);
-      const res = await runOnce(st.q, kind, st.relaxed, signal);
+      let res;
+      try {
+        res = await once(st.q, kind, signal);
+      } catch (e) {
+        if (signal && signal.aborted) throw abortErr();
+        errs.add("Search service");
+        return { results: [], errors: Array.from(errs), stage: st.name };
+      }
       res.errors.forEach((e) => errs.add(e));
       if (res.results.length) return { results: res.results, errors: Array.from(errs), stage: st.name };
     }
-    if (signal && signal.aborted) throw new DOMException("aborted", "AbortError");
+    if (signal && signal.aborted) throw abortErr();
     return { results: [], errors: Array.from(errs), stage: "done" };
   }
 
-  async function refreshById(anilistId) {
-    const json = await fetchJSON(
-      AL,
-      { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ query: Q_ID, variables: { id: Number(anilistId) } }) },
-      8000
-    );
-    const m = json.data && json.data.Media;
-    if (!m) throw new Error("Not found on AniList");
-    const r = fromAniList(m, kindOf(m.format, m.countryOfOrigin, "manhwa"));
-    r.sources = ["anilist"];
-    r.item_key = keyOf(r);
-    return r;
+  /* ---------- details ---------- */
+  function firstNum(line) {
+    const m = String(line || "").match(/\d[\d,]*(?:\.\d+)?/);
+    return m ? Number(m[0].replace(/,/g, "")) || null : null;
   }
 
-  Ink.api = { search, refreshById, simplify, titleScore, norm, keyOf };
+  /** "2060 Chapters (Complete)\n96 Web-Volumes (Complete)" → totals and status */
+  function parseStatus(raw, completed) {
+    const lines = String(raw || "").split(/\r?\n/);
+    const ch = lines.find((l) => /chapter/i.test(l));
+    const vol = lines.find((l) => /volume/i.test(l));
+    const text = String(raw || "");
+    let pubStatus = "";
+    if (/complete/i.test(text) || completed === true) pubStatus = "FINISHED";
+    else if (/ongoing/i.test(text)) pubStatus = "RELEASING";
+    else if (/hiatus/i.test(text)) pubStatus = "HIATUS";
+    return {
+      totalChapters: ch && /complete/i.test(ch) ? firstNum(ch) : null,
+      totalVolumes: vol ? firstNum(vol) : null,
+      pubStatus,
+    };
+  }
+
+  const isAniListCover = (u) => /anili\.?st/i.test(String(u || ""));
+
+  /** series_details row → the data patch stored on a shelf item. */
+  function detailsToData(d, prev) {
+    prev = prev || {};
+    const title = cleanTitle(d.title) || prev.title;
+    const alt = uniq((d.alt || []).map(cleanTitle)).filter((t) => norm(t) !== norm(title));
+    const st = parseStatus(d.status_raw, d.completed);
+    const description = cleanDesc(d.description).slice(0, 1600);
+    const cover = isAniListCover(prev.cover) ? prev.cover : d.cover || prev.cover || "";
+    const latest = d.latest_chapter == null ? null : Number(d.latest_chapter) || null;
+    const rating = Number(d.rating);
+    const status = st.pubStatus || prev.pubStatus || prev.status || "";
+    return {
+      muId: String(d.mu_id),
+      title,
+      titleAlt: alt[0] || prev.titleAlt || "",
+      alt: uniq(alt.concat(prev.alt || [])).filter((t) => norm(t) !== norm(title)).slice(0, 8),
+      description,
+      desc: description || prev.desc || "",
+      cover,
+      genres: (d.genres && d.genres.length ? d.genres : prev.genres || []).slice(0, 8),
+      authors: d.authors || prev.authors || [],
+      latestChapter: latest,
+      lastChapter: latest,
+      totalChapters: st.totalChapters,
+      chapters: st.totalChapters || (st.pubStatus === "FINISHED" ? prev.chapters || null : null),
+      totalVolumes: st.totalVolumes,
+      volumes: st.totalVolumes || prev.volumes || null,
+      pubStatus: st.pubStatus,
+      status,
+      siteUrl: d.url || prev.siteUrl || "",
+      url: d.url || prev.url || "",
+      year: Number(d.year) || prev.year || null,
+      score: prev.score || (rating > 0 ? Math.round(rating * 10) : null),
+      format: prev.format || (d.type === "Novel" ? "NOVEL" : d.type ? String(d.type).toUpperCase() : ""),
+      color: prev.color || "",
+      banner: prev.banner || "",
+      anilistId: prev.anilistId || null,
+      malId: prev.malId || null,
+      sources: Array.from(new Set((prev.sources || []).concat("mangaupdates"))),
+      refreshedAt: Date.now(),
+    };
+  }
+
+  async function details(muId) {
+    const d = await rpc("series_details", { mu_id: String(muId) });
+    const row = Array.isArray(d) ? d[0] : d;
+    if (!row || !row.mu_id) throw new Error("Series not found");
+    return row;
+  }
+
+  /**
+   * refresh(item) → Promise of a data patch for item.data.
+   * MangaUpdates items go straight to series_details. Older AniList-keyed
+   * items are looked up by title first to find their MangaUpdates id.
+   */
+  async function refresh(item) {
+    const data = (item && item.data) || {};
+    let muId = data.muId || (String(item.item_key || "").startsWith("mu:") ? item.item_key.slice(3) : null);
+    let found = null;
+    if (!muId) {
+      const res = await search(data.title || "", item.kind === "lightnovel" ? "lightnovel" : "manhwa");
+      found =
+        res.results.find((r) => data.anilistId && r.anilistId === data.anilistId) ||
+        res.results.find((r) => data.malId && r.malId === data.malId) ||
+        res.results.find((r) => r._match >= 95);
+      if (!found) {
+        if (res.errors.length) throw new Error("Search sources didn't respond");
+        throw new Error("Not found");
+      }
+      muId = found.muId;
+    }
+    const prev = Object.assign({}, data);
+    if (found) {
+      if (found.cover && (!prev.cover || isAniListCover(found.cover))) prev.cover = found.cover;
+      ["color", "banner", "score", "anilistId", "malId"].forEach((k) => {
+        if (found[k]) prev[k] = found[k];
+      });
+    }
+    if (!muId) return Object.assign(prev, { status: found.status || prev.status, chapters: found.chapters || prev.chapters, volumes: found.volumes || prev.volumes, refreshedAt: Date.now() });
+    return detailsToData(await details(muId), prev);
+  }
+
+  Ink.api = { search, refresh, refreshById: (item) => refresh(item), details, detailsToData, simplify, titleScore, norm, keyOf, keysOf, cleanTitle, cleanDesc, parseStatus };
 })();
 /* ============ INKSHELF · ui-library.js ============
    The shelf: status tabs, kind chips, sort, filter, cards with
@@ -966,12 +1092,20 @@
 
   const unitOf = (it) => (it.kind === "lightnovel" ? it.progress.unit : "chapter");
   const valueOf = (it) => (unitOf(it) === "volume" ? it.progress.volume : it.progress.chapter);
+  const pubOf = (d) => d.pubStatus || d.status || "";
+  /** The known final count: total chapters, or volumes once the series is finished. */
   const totalOf = (it) => {
     const d = it.data || {};
-    return unitOf(it) === "volume" ? d.volumes || null : d.chapters || d.lastChapter || null;
+    if (unitOf(it) === "volume") return pubOf(d) === "FINISHED" || !d.muId ? d.totalVolumes || d.volumes || null : null;
+    return d.totalChapters || d.chapters || null;
+  };
+  /** The latest released count, when no final total is known. */
+  const latestOf = (it) => {
+    const d = it.data || {};
+    return unitOf(it) === "volume" ? d.totalVolumes || d.volumes || null : d.latestChapter || d.lastChapter || null;
   };
   const pctOf = (it) => {
-    const t = totalOf(it);
+    const t = totalOf(it) || latestOf(it);
     if (it.status === "completed") return 100;
     return t ? Math.min(100, Math.round((valueOf(it) / t) * 100)) : 0;
   };
@@ -998,7 +1132,13 @@
     const total = totalOf(it);
     const isLN = it.kind === "lightnovel";
     const short = unit === "volume" ? "Vol" : "Ch";
-    const meta = `${short} ${valueOf(it)}${total ? " / " + total : ""}${d.status ? " · " + Ink.ui.fmtStatus(d.status) : ""}`;
+    const latest = latestOf(it);
+    const st = pubOf(d) ? Ink.ui.fmtStatus(pubOf(d)) : "";
+    const meta = total
+      ? `${short} ${valueOf(it)} / ${total}${st ? " · " + st : ""}`
+      : latest
+      ? `${short} ${valueOf(it)} · latest ${latest}`
+      : `${short} ${valueOf(it)} · ${st || "Ongoing"}`;
     return `<article class="x-card" data-key="${esc(it.item_key)}" style="--glow:${c};background:linear-gradient(180deg,color-mix(in srgb,${c} 16%,var(--ink-2)),var(--ink-2) 62%)">
   <div class="x-card__media">
     ${d.cover ? `<img src="${esc(d.cover)}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : `<div style="position:absolute;inset:0;display:grid;place-items:center;padding:10px;text-align:center" class="x-bebas">${esc(d.title)}</div>`}
@@ -1105,20 +1245,32 @@
 
   async function refresh(key) {
     const it = Ink.store.get(key);
-    if (!it || !it.data.anilistId) return Ink.ui.toast("Only AniList entries can be refreshed.");
+    if (!it) return;
     try {
-      const r = await Ink.api.refreshById(it.data.anilistId);
-      Ink.store.saveItem({ item_key: key, data: Ink.search.toData(r) });
-      Ink.ui.toast(`Updated “${r.title}”`);
+      await Ink.search.enrich(key, false);
+      const now = Ink.store.get(key);
+      Ink.ui.toast(`Updated “${(now || it).data.title}”`);
     } catch (e) {
-      Ink.ui.toast("AniList didn't respond — try again later.");
+      Ink.ui.toast(e && e.message === "Not found" ? `Couldn't find “${it.data.title}” in live search.` : "Search sources didn't respond — try again later.");
     }
+  }
+
+  /** On load, quietly refresh up to 5 items whose info is over 7 days old. */
+  async function refreshStale() {
+    const WEEK = 7 * 864e5;
+    const now = Date.now();
+    const stale = Ink.store
+      .getAll()
+      .filter((it) => now - (it.data.refreshedAt || 0) > WEEK)
+      .sort((a, b) => (a.data.refreshedAt || 0) - (b.data.refreshedAt || 0))
+      .slice(0, 5);
+    for (const it of stale) await Ink.search.enrich(it.item_key, true);
   }
 
   function openMove(btn, key) {
     const it = Ink.store.get(key);
     const opts = Ink.store.STATUSES.filter((s) => s !== it.status).map((s) => ({ label: `Move to ${LABEL[s]}`, onClick: () => move(key, s) }));
-    if (it.data.anilistId) opts.push("hr", { label: "Refresh info", onClick: () => refresh(key) });
+    opts.push("hr", { label: "Refresh info", onClick: () => refresh(key) });
     opts.push("hr", { label: "Remove from shelf", onClick: () => remove(key) });
     Ink.ui.openMenu(btn, opts);
   }
@@ -1202,6 +1354,7 @@
     init() {
       bind();
       render();
+      setTimeout(refreshStale, 2500);
     },
     render,
     setTab(t) {
@@ -1231,9 +1384,18 @@
 
   /** The subset of a result that is stored on a shelf item. */
   function toData(r) {
+    const desc = (r.description || r.desc || "").slice(0, 1600);
     return {
       title: r.title,
+      titleAlt: r.titleAlt || r.sub || "",
       alt: (r.alt || []).filter((t) => t !== r.title).slice(0, 8),
+      description: desc,
+      latestChapter: r.latestChapter || r.lastChapter || null,
+      totalChapters: r.totalChapters || null,
+      totalVolumes: r.totalVolumes || null,
+      pubStatus: r.pubStatus || "",
+      siteUrl: r.siteUrl || r.url || "",
+      muId: r.muId || null,
       cover: r.cover || "",
       color: r.color || "",
       banner: r.banner || "",
@@ -1245,7 +1407,7 @@
       lastChapter: r.lastChapter || null,
       score: r.score || null,
       genres: (r.genres || []).slice(0, 8),
-      desc: (r.desc || "").slice(0, 1600),
+      desc,
       url: r.url || "",
       year: r.year || null,
       anilistId: r.anilistId || null,
@@ -1253,6 +1415,45 @@
       mdId: r.mdId || null,
       sources: r.sources || [r.source].filter(Boolean),
     };
+  }
+
+  /** The shelf item for a result, under its new key or an older al:/mal: key. */
+  function onShelf(r) {
+    for (const k of Ink.api.keysOf(r)) {
+      const it = Ink.store.get(k);
+      if (it) return it;
+    }
+    return null;
+  }
+
+  const SRC = { mangaupdates: "MangaUpdates", anilist: "AniList", mangadex: "MangaDex", jikan: "Jikan" };
+  const totalCh = (r) => r.totalChapters || r.chapters || null;
+  const latestCh = (r) => r.latestChapter || r.lastChapter || null;
+  const pub = (r) => r.pubStatus || r.status || "";
+  const subOf = (r) => r.sub || r.titleAlt || (r.alt || []).find((t) => /[\uac00-\ud7af\u3040-\u30ff\u4e00-\u9fff]/.test(t)) || "";
+
+  /** Fetch full MangaUpdates details for a shelf item in the background, then re-render. */
+  function enrich(key, quiet) {
+    const it = Ink.store.get(key);
+    if (!it) return Promise.resolve(false);
+    return Ink.api.refresh(it).then(
+      (data) => {
+        const cur = Ink.store.get(key);
+        if (!cur) return false;
+        const patch = { item_key: key, data };
+        if (cur.status === "completed" && !cur.progress.chapter) {
+          const t = data.totalChapters || data.chapters || data.latestChapter;
+          if (t) patch.progress = { chapter: t, volume: cur.progress.volume || data.totalVolumes || 0 };
+        }
+        if (quiet) Object.assign(patch, { updated_at: cur.updated_at, keepTime: true });
+        Ink.store.saveItem(patch);
+        return true;
+      },
+      (e) => {
+        if (!quiet) throw e;
+        return false;
+      }
+    );
   }
 
   const flag = (k) => (k === "lightnovel" ? `<span class="x-flag is-ln">LN</span>` : `<span class="x-flag is-manhwa">Manhwa</span>`);
@@ -1277,14 +1478,15 @@
 
   function row(r, i) {
     const esc = Ink.ui.esc;
-    const on = Ink.store.get(r.item_key);
-    const bits = [r.format && r.format.replace(/_/g, " "), r.year, r.status && Ink.ui.fmtStatus(r.status)].filter(Boolean).join(" · ");
-    const count = r.chapters ? `${r.chapters} ch` : r.lastChapter ? `${r.lastChapter} ch so far` : r.volumes ? `${r.volumes} vol` : "";
+    const on = onShelf(r);
+    const bits = [r.format && r.format.replace(/_/g, " "), r.year, pub(r) && Ink.ui.fmtStatus(pub(r))].filter(Boolean).join(" · ");
+    const count = totalCh(r) ? `${totalCh(r)} ch` : latestCh(r) ? `${latestCh(r)} ch so far` : r.volumes ? `${r.volumes} vol` : "";
     return `<button class="x-row" data-i="${i}" type="button">
   <span class="x-row__cover">${r.cover ? `<img src="${esc(r.cover)}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : ""}</span>
   <span class="x-row__main">
     <span>${flag(r.kind)}</span>
-    <span class="x-row__t">${esc(r.title)}</span>
+    <span class="x-row__t">${esc(r.title)}</span>${r.sub ? `
+    <span class="x-row__s">${esc(r.sub)}</span>` : ""}
     <span class="x-row__s">${esc(bits)}${count ? " · " + esc(count) : ""}${r.score ? " · ★ " + r.score + "%" : ""}</span>
     <span class="x-tags">${on ? `<span class="x-tag" style="border-color:var(--red);color:var(--txt)">On shelf · ${Ink.library.LABEL[on.status]}</span>` : ""}${(r.genres || [])
       .slice(0, 3)
@@ -1298,13 +1500,13 @@
     const esc = Ink.ui.esc;
     results = res.results;
     const out = $("#search-out");
-    const retry = `<div class="x-note"><span>Some sources didn't respond${res.errors.length ? " (" + esc(res.errors.join(", ")) + ")" : ""}.</span><button class="x-link" data-act="retry">Retry</button></div>`;
     if (results.length) {
-      out.innerHTML = (res.errors.length ? retry : "") + `<div class="x-res">${results.slice(0, 24).map(row).join("")}</div>`;
+      const partial = `<div class="x-note"><span>Some sources didn't respond (${esc(res.errors.join(", "))}).</span><button class="x-link" data-act="retry">Retry</button></div>`;
+      out.innerHTML = (res.errors.length ? partial : "") + `<div class="x-res">${results.slice(0, 24).map(row).join("")}</div>`;
       return;
     }
     if (res.errors.length) {
-      out.innerHTML = retry;
+      out.innerHTML = `<div class="x-note"><span>Search sources didn't respond.</span><button class="x-link" data-act="retry">Retry</button></div>`;
       return;
     }
     out.innerHTML = `<div class="x-empty"><div class="x-bubble"><h3>No match yet</h3><p>Couldn't find “${esc(q)}” yet — try the Korean or romanized title.</p></div></div>`;
@@ -1331,7 +1533,6 @@
           onStage: (s) => {
             if (mine !== ctrl) return;
             if (s === "simplified") skeleton("No exact hit — trying a simpler title…");
-            if (s === "relaxed") skeleton("Widening the search to every format…");
           },
         });
         if (mine !== ctrl) return;
@@ -1339,7 +1540,7 @@
       } catch (e) {
         if (e && e.name === "AbortError" && mine !== ctrl) return;
         if (mine !== ctrl) return;
-        renderResults({ results: [], errors: ["all sources"] }, q);
+        renderResults({ results: [], errors: ["Search service"] }, q);
       }
     };
     if (now) go();
@@ -1349,17 +1550,19 @@
   /* ---------- detail sheet ---------- */
   function openDetail(r) {
     const esc = Ink.ui.esc;
-    const on = Ink.store.get(r.item_key);
+    const on = onShelf(r);
     const k = (on && on.kind) || r.kind || kind;
     const facts = [
-      ["Chapters", r.chapters || (r.lastChapter ? r.lastChapter + " so far" : "—")],
-      ["Volumes", r.volumes || "—"],
-      ["Status", r.status ? Ink.ui.fmtStatus(r.status) : "—"],
+      ["Chapters", totalCh(r) || (latestCh(r) ? "latest " + latestCh(r) : "—")],
+      ["Volumes", r.totalVolumes || r.volumes || "—"],
+      ["Status", pub(r) ? Ink.ui.fmtStatus(pub(r)) : "—"],
       ["Score", r.score ? r.score + "%" : "—"],
       ["Year", r.year || "—"],
     ];
-    const native = (r.alt || []).find((t) => /[\uac00-\ud7af\u3040-\u30ff\u4e00-\u9fff]/.test(t));
-    const src = (r.sources || [r.source]).filter(Boolean).join(" · ");
+    const native = subOf(r);
+    const desc = r.description || r.desc || "";
+    const link = r.siteUrl || r.url || "";
+    const src = (r.sources || [r.source]).filter(Boolean).map((s) => SRC[s] || s).join(" · ");
     const statusBtns = Ink.store.STATUSES.map((s) => {
       const label = on ? (on.status === s ? `✓ ${Ink.library.LABEL[s]}` : `Move to ${Ink.library.LABEL[s]}`) : { plan: "Add to Plan", reading: "Start reading", completed: "Mark completed" }[s];
       const primary = !on && s === "reading" ? " is-primary" : "";
@@ -1374,10 +1577,10 @@
     </div>
     <dl class="x-dl">${facts.map(([a, b]) => `<div><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl>
     ${r.genres && r.genres.length ? `<div class="x-tags">${r.genres.map((g) => `<span class="x-tag">${esc(g)}</span>`).join("")}</div>` : ""}
-    ${r.desc ? `<div><p class="x-desc is-clamped" id="sheet-desc" style="white-space:pre-line;margin:0">${esc(r.desc)}</p><button class="x-link" data-more>More</button></div>` : ""}
+    ${desc ? `<div><p class="x-desc is-clamped" id="sheet-desc" style="white-space:pre-line;margin:0">${esc(desc)}</p><button class="x-link" data-more>More</button></div>` : ""}
     ${on ? `<p class="x-row__s" style="margin:0">On your shelf in <b style="color:var(--txt)">${Ink.library.LABEL[on.status]}</b>.</p>` : ""}
     <div class="x-btns">${statusBtns}</div>
-    <p class="x-row__s" style="margin:0">${src ? "From " + esc(src) : ""}${r.url ? ` · <a href="${esc(r.url)}" target="_blank" rel="noopener">Open source page</a>` : ""}</p>
+    <p class="x-row__s" style="margin:0">${src ? "From " + esc(src) : ""}${link ? ` · <a href="${esc(link)}" target="_blank" rel="noopener">Open source page</a>` : ""}</p>
   </div>`;
 
     Ink.ui.openSheet(html, (sheet) => {
@@ -1398,15 +1601,17 @@
   }
 
   function add(r, status, k) {
-    const cur = Ink.store.get(r.item_key);
+    const cur = onShelf(r);
     if (cur) {
-      if (cur.status !== status) Ink.store.saveItem({ item_key: r.item_key, status });
+      if (cur.status !== status) Ink.store.saveItem({ item_key: cur.item_key, status });
       Ink.ui.toast(`“${r.title}” → ${Ink.library.LABEL[status]}`);
       return;
     }
-    const total = r.chapters || r.lastChapter || 0;
-    const progress = status === "completed" ? { chapter: total, volume: r.volumes || 0 } : {};
+    const total = totalCh(r) || latestCh(r) || 0;
+    const progress = status === "completed" ? { chapter: total, volume: r.totalVolumes || r.volumes || 0 } : {};
     Ink.store.saveItem({ item_key: r.item_key, kind: k, status, progress, data: toData(r) });
+    // Add right away with search data; fill in full details in the background.
+    if (r.muId) enrich(r.item_key, true);
     Ink.ui.toast(`Added “${r.title}” to ${Ink.library.LABEL[status]}`, {
       action: "View",
       onAction: () => {
@@ -1445,6 +1650,8 @@
     },
     openDetail,
     toData,
+    enrich,
+    onShelf,
     focus() {
       const i = $("#q");
       i.focus();
