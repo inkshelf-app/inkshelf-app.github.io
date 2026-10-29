@@ -1,0 +1,2013 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>INKSHELF — Manhwa &amp; Light Novel Tracker</title>
+    <meta name="theme-color" content="#0a0a0b" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0a0b'/%3E%3Crect x='6' y='7' width='7' height='18' rx='1.5' fill='%2322d3ee'/%3E%3Crect x='15' y='7' width='7' height='18' rx='1.5' fill='%23f59e0b'/%3E%3Crect x='24' y='7' width='3' height='18' rx='1.5' fill='%23e63946'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap"
+    />
+    <style>
+      :root {
+        --ink: #0a0a0b;
+        --ink-2: #111113;
+        --ink-3: #17171a;
+        --line: #26262b;
+        --line-2: #35353d;
+        --txt: #f4f4f5;
+        --txt-2: #a1a1aa;
+        --txt-3: #71717a;
+        --cyan: #22d3ee;
+        --amber: #f59e0b;
+        --red: #e63946;
+        --dur: 220ms;
+        --ease: cubic-bezier(0.22, 0.8, 0.3, 1);
+        --tap: 44px;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--ink);
+        color: var(--txt);
+        font: 400 15px/1.55 Inter, system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+        padding-bottom: 86px;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.5;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1.2px);
+        background-size: 5px 5px;
+      }
+      .x-wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+      h1, h2, h3, .x-bebas {
+        font-family: "Bebas Neue", Impact, sans-serif;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        margin: 0;
+        line-height: 1;
+      }
+      button, input, select { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: var(--cyan); }
+
+      /* top bar */
+      .x-top {
+        position: sticky; top: 0; z-index: 40;
+        background: rgba(10, 10, 11, 0.9);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--line);
+      }
+      .x-top__in { display: flex; align-items: center; gap: 12px; padding: 10px 16px; max-width: 1180px; margin: 0 auto; }
+      .x-logo { display: flex; align-items: baseline; gap: 8px; }
+      .x-logo b { font-family: "Bebas Neue", sans-serif; font-size: 30px; letter-spacing: 0.08em; font-weight: 400; }
+      .x-logo b i { font-style: normal; color: var(--red); }
+      .x-logo span { font-size: 10px; letter-spacing: 0.22em; color: var(--txt-3); text-transform: uppercase; }
+      .x-top__sp { flex: 1; }
+      .x-iconbtn {
+        min-width: var(--tap); min-height: var(--tap);
+        display: inline-flex; align-items: center; justify-content: center;
+        background: var(--ink-3); border: 1px solid var(--line); border-radius: 10px;
+        transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+      }
+      .x-iconbtn:hover { border-color: var(--line-2); transform: translateY(-1px); }
+      .x-iconbtn svg { width: 19px; height: 19px; }
+
+      /* skewed section header */
+      .x-sechead { display: flex; align-items: center; gap: 12px; margin: 26px 0 14px; }
+      .x-sechead__tag {
+        transform: skewX(-12deg);
+        background: var(--txt); color: var(--ink);
+        padding: 4px 14px 3px;
+        font-family: "Bebas Neue", sans-serif; font-size: 22px; letter-spacing: 0.08em;
+      }
+      .x-sechead__tag.is-red { background: var(--red); color: #fff; }
+      .x-sechead__rule { flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-2), transparent); }
+      .x-sechead__note { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--txt-3); }
+
+      /* panels */
+      .x-panel {
+        background: var(--ink-2); border: 1px solid var(--line); border-radius: 14px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+      }
+
+      /* search */
+      .x-searchrow { display: flex; gap: 8px; flex-wrap: wrap; }
+      .x-field { position: relative; flex: 1 1 220px; min-width: 0; }
+      .x-field svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: var(--txt-3); }
+      .x-input {
+        width: 100%; min-height: var(--tap);
+        background: var(--ink-3); border: 1px solid var(--line); border-radius: 12px;
+        padding: 10px 12px 10px 36px; outline: none;
+        transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+      }
+      .x-input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.14); }
+      .x-input::placeholder { color: var(--txt-3); }
+      .x-seg { display: inline-flex; background: var(--ink-3); border: 1px solid var(--line); border-radius: 12px; padding: 3px; }
+      .x-seg button {
+        min-height: 38px; padding: 0 14px; border: 0; background: none; border-radius: 9px;
+        font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--txt-2);
+        transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+      }
+      .x-seg button[aria-pressed="true"] { background: var(--txt); color: var(--ink); }
+      .x-seg.is-cyan button[aria-pressed="true"] { background: var(--cyan); color: #04282e; }
+      .x-seg.is-amber button[aria-pressed="true"] { background: var(--amber); color: #2a1a00; }
+
+      /* chips / toolbar */
+      .x-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+      .x-chip {
+        min-height: 36px; padding: 0 13px; border-radius: 999px;
+        background: transparent; border: 1px solid var(--line-2); color: var(--txt-2);
+        font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+        transition: all var(--dur) var(--ease);
+      }
+      .x-chip[aria-pressed="true"] { background: var(--txt); border-color: var(--txt); color: var(--ink); }
+      .x-select {
+        min-height: 36px; background: var(--ink-3); border: 1px solid var(--line); border-radius: 999px;
+        padding: 0 10px; font-size: 12px; color: var(--txt-2);
+      }
+
+      /* tabs */
+      .x-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+      .x-tab {
+        background: none; border: 0; border-bottom: 2px solid transparent;
+        padding: 10px 4px; min-height: var(--tap); white-space: nowrap;
+        font-family: "Bebas Neue", sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--txt-3);
+        margin-right: 14px; transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+      }
+      .x-tab em { font-style: normal; font-family: Inter, sans-serif; font-size: 11px; font-weight: 700; color: var(--txt-3); margin-left: 6px; vertical-align: 3px; }
+      .x-tab[aria-selected="true"] { color: var(--txt); border-color: var(--red); }
+      .x-tab[aria-selected="true"] em { color: var(--red); }
+
+      /* grid + cards */
+      .x-grid { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; }
+      @media (min-width: 620px) { .x-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+      @media (min-width: 900px) { .x-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; } }
+      @media (min-width: 1100px) { .x-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+      .x-card {
+        position: relative; background: var(--ink-2); border: 1px solid var(--line);
+        border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
+        transform-style: preserve-3d;
+        transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform 120ms var(--ease);
+      }
+      .x-card:hover { border-color: var(--line-2); box-shadow: 0 14px 34px -18px var(--glow, rgba(230,57,70,0.8)), 0 0 0 1px rgba(255,255,255,0.03); }
+      .x-card__media { position: relative; aspect-ratio: 2 / 3; background: var(--ink-3); overflow: hidden; }
+      .x-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 400ms var(--ease); }
+      .x-card:hover .x-card__media img { transform: scale(1.04); }
+      .x-card__open { position: absolute; inset: 0; border: 0; background: none; width: 100%; }
+      .x-badge {
+        position: absolute; top: 8px; left: 8px; z-index: 2;
+        font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+        padding: 4px 7px; border-radius: 5px; transform: skewX(-10deg);
+      }
+      .x-badge.is-manhwa { background: var(--cyan); color: #04282e; }
+      .x-badge.is-ln { background: var(--amber); color: #2a1a00; }
+      .x-score {
+        position: absolute; top: 8px; right: 8px; z-index: 2; font-size: 10px; font-weight: 700;
+        background: rgba(10,10,11,0.82); border: 1px solid var(--line-2); border-radius: 5px; padding: 3px 6px;
+      }
+      .x-card__body { padding: 10px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+      .x-card__title { font-size: 13px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .x-card__meta { font-size: 11px; color: var(--txt-3); }
+      .x-bar { height: 4px; border-radius: 3px; background: #26262b; overflow: hidden; }
+      .x-bar i { display: block; height: 100%; border-radius: 3px; background: var(--glow, var(--red)); box-shadow: 0 0 10px var(--glow, var(--red)); transition: width 320ms var(--ease); }
+      .x-prog { display: flex; align-items: center; gap: 6px; }
+      .x-step {
+        width: 34px; height: 34px; border-radius: 9px; background: var(--ink-3); border: 1px solid var(--line);
+        display: inline-flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700;
+        transition: all var(--dur) var(--ease);
+      }
+      .x-step:hover { border-color: var(--glow, var(--red)); color: #fff; }
+      .x-num {
+        flex: 1; min-height: 34px; background: var(--ink-3); border: 1px solid var(--line); border-radius: 9px;
+        font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 0 4px;
+      }
+      .x-num input { width: 100%; text-align: center; background: none; border: 0; outline: none; font-weight: 700; }
+      .x-card__acts { display: flex; gap: 6px; }
+      .x-mini {
+        flex: 1; min-height: 32px; border-radius: 8px; background: transparent; border: 1px solid var(--line);
+        font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--txt-2);
+        transition: all var(--dur) var(--ease);
+      }
+      .x-mini:hover { border-color: var(--line-2); color: var(--txt); }
+      .x-mini.is-danger:hover { border-color: var(--red); color: var(--red); }
+      .x-unit { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--txt-3); background: none; border: 0; text-decoration: underline dotted; }
+
+      /* menu */
+      .x-menu { position: absolute; z-index: 60; background: var(--ink-3); border: 1px solid var(--line-2); border-radius: 12px; padding: 6px; min-width: 170px; box-shadow: 0 20px 50px -20px #000; }
+      .x-menu button { display: block; width: 100%; text-align: left; background: none; border: 0; border-radius: 8px; padding: 9px 10px; min-height: 40px; font-size: 13px; color: var(--txt-2); }
+      .x-menu button:hover { background: #22222a; color: var(--txt); }
+      .x-menu hr { border: 0; border-top: 1px solid var(--line); margin: 5px 2px; }
+
+      /* list rows (search results) */
+      .x-res { display: grid; gap: 10px; margin-top: 14px; }
+      @media (min-width: 760px) { .x-res { grid-template-columns: 1fr 1fr; } }
+      .x-row {
+        display: flex; gap: 12px; padding: 10px; text-align: left; width: 100%;
+        background: var(--ink-2); border: 1px solid var(--line); border-radius: 14px;
+        transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+      }
+      .x-row:hover { border-color: var(--line-2); transform: translateY(-2px); }
+      .x-row__cover { width: 64px; flex: 0 0 64px; aspect-ratio: 2/3; border-radius: 9px; overflow: hidden; background: var(--ink-3); position: relative; }
+      .x-row__cover img { width: 100%; height: 100%; object-fit: cover; }
+      .x-row__main { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+      .x-row__t { font-size: 14px; font-weight: 600; line-height: 1.3; }
+      .x-row__s { font-size: 11px; color: var(--txt-3); }
+      .x-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+      .x-tag { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--txt-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; }
+      .x-flag { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; padding: 3px 6px; border-radius: 4px; transform: skewX(-10deg); }
+      .x-flag.is-manhwa { background: var(--cyan); color: #04282e; }
+      .x-flag.is-ln { background: var(--amber); color: #2a1a00; }
+
+      /* empty / notices */
+      .x-empty { text-align: center; padding: 40px 16px; }
+      .x-bubble {
+        position: relative; display: inline-block; max-width: 420px;
+        background: var(--ink-2); border: 1px solid var(--line-2); border-radius: 18px; padding: 18px 22px;
+      }
+      .x-bubble::after { content: ""; position: absolute; left: 34px; bottom: -11px; width: 18px; height: 18px; background: var(--ink-2); border-right: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); transform: rotate(45deg) skewX(-6deg); }
+      .x-bubble h3 { font-size: 26px; margin-bottom: 6px; }
+      .x-bubble p { margin: 0; font-size: 13px; color: var(--txt-2); }
+      .x-note { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; padding: 12px 14px; border: 1px dashed var(--line-2); border-radius: 12px; font-size: 13px; color: var(--txt-2); }
+      .x-skel { background: linear-gradient(90deg, #15151a, #1d1d24, #15151a); background-size: 200% 100%; animation: x-sh 1.3s linear infinite; border-radius: 14px; }
+      @keyframes x-sh { to { background-position: -200% 0; } }
+
+      /* sheet */
+      .x-scrim { position: fixed; inset: 0; z-index: 70; background: rgba(4,4,6,0.72); backdrop-filter: blur(6px); animation: x-fade var(--dur) var(--ease); }
+      @keyframes x-fade { from { opacity: 0; } }
+      .x-sheet {
+        position: fixed; z-index: 71; left: 0; right: 0; bottom: 0; max-height: 92vh; overflow: auto;
+        background: var(--ink-2); border-top: 1px solid var(--line-2);
+        border-radius: 18px 18px 0 0; animation: x-up 280ms var(--ease);
+      }
+      @keyframes x-up { from { transform: translateY(26px); opacity: 0.4; } }
+      @media (min-width: 760px) {
+        .x-sheet { left: 50%; right: auto; bottom: auto; top: 50%; transform: translate(-50%, -50%); width: min(720px, 92vw); border-radius: 18px; border: 1px solid var(--line-2); max-height: 88vh; }
+        @keyframes x-up { from { transform: translate(-50%, -46%); opacity: 0.4; } }
+      }
+      .x-sheet__banner { position: relative; height: 150px; background: #1b1b22; }
+      .x-sheet__banner img { width: 100%; height: 100%; object-fit: cover; }
+      .x-sheet__banner::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, var(--ink-2), transparent 75%); }
+      .x-sheet__close { position: absolute; top: 10px; right: 10px; z-index: 3; }
+      .x-sheet__in { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+      .x-sheet h2 { font-size: 30px; }
+      .x-dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 0; }
+      .x-dl div { background: var(--ink-3); border: 1px solid var(--line); border-radius: 11px; padding: 9px 11px; }
+      .x-dl dt { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--txt-3); }
+      .x-dl dd { margin: 3px 0 0; font-size: 14px; font-weight: 600; }
+      .x-desc { font-size: 13px; color: var(--txt-2); }
+      .x-desc.is-clamped { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+      .x-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+      .x-btn {
+        min-height: var(--tap); padding: 0 16px; border-radius: 11px;
+        background: var(--ink-3); border: 1px solid var(--line-2); color: var(--txt);
+        font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+        transition: all var(--dur) var(--ease);
+      }
+      .x-btn:hover { transform: translateY(-1px); border-color: var(--txt-3); }
+      .x-btn.is-primary { background: var(--red); border-color: var(--red); color: #fff; }
+      .x-btn.is-ghost { background: none; }
+      .x-link { background: none; border: 0; color: var(--cyan); font-size: 12px; font-weight: 600; text-decoration: underline; padding: 0; min-height: 0; }
+
+      /* toasts */
+      .x-toasts { position: fixed; z-index: 90; left: 50%; transform: translateX(-50%); bottom: 96px; display: flex; flex-direction: column; gap: 8px; width: min(440px, calc(100vw - 24px)); }
+      .x-toast {
+        display: flex; align-items: center; gap: 10px;
+        background: #1b1b21; border: 1px solid var(--line-2); border-left: 3px solid var(--cyan);
+        border-radius: 12px; padding: 10px 12px; font-size: 13px; box-shadow: 0 18px 40px -18px #000;
+        animation: x-toast 260ms var(--ease);
+      }
+      @keyframes x-toast { from { transform: translateY(14px); opacity: 0; } }
+      .x-toast span { flex: 1; }
+      .x-toast button { background: none; border: 0; color: var(--cyan); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; min-height: 32px; }
+
+      /* bottom tabs */
+      .x-bottom {
+        position: fixed; z-index: 50; bottom: 0; left: 0; right: 0;
+        background: rgba(10,10,11,0.94); backdrop-filter: blur(14px); border-top: 1px solid var(--line);
+        display: flex; padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+      }
+      .x-bottom button {
+        flex: 1; min-height: 52px; background: none; border: 0; border-radius: 12px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+        font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--txt-3);
+      }
+      .x-bottom button svg { width: 20px; height: 20px; }
+      .x-bottom button[aria-current="true"] { color: var(--txt); }
+      .x-bottom button[aria-current="true"] svg { color: var(--red); }
+      .x-foot { text-align: center; font-size: 11px; color: var(--txt-3); padding: 34px 0 10px; letter-spacing: 0.06em; }
+      /* readability: 12px minimum, AA contrast, 44px targets */
+      :root { --txt-3: #9a9aa4; }
+      .x-logo span, .x-sechead__note, .x-seg button, .x-tab em, .x-badge, .x-score, .x-card__meta,
+      .x-mini, .x-unit, .x-row__s, .x-tag, .x-flag, .x-dl dt, .x-bottom button, .x-foot,
+      .x-panel > p { font-size: 12px !important; }
+      .x-logo span, .x-sechead__note, .x-dl dt { letter-spacing: 0.1em; }
+      .x-seg button { min-height: var(--tap); }
+      .x-btn.is-primary { background: #c42532; border-color: #c42532; }
+      /* account pill + sync */
+      .x-pill {
+        min-height: var(--tap); max-width: 46vw; display: inline-flex; align-items: center; gap: 8px;
+        padding: 0 14px; background: var(--ink-3); border: 1px solid var(--line); border-radius: 999px;
+        font-size: 12px; font-weight: 600; color: var(--txt-2);
+        transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+      }
+      .x-pill:hover { border-color: var(--line-2); transform: translateY(-1px); }
+      .x-pill__e { color: var(--txt); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+      .x-pill__e:empty { display: none; }
+      .x-pill__s { white-space: nowrap; }
+      .x-pill__e:not(:empty) + .x-pill__s::before { content: "· "; }
+      .x-pill__dot { display: inline-block; flex: none; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--txt-3); }
+      .x-pill__dot[data-s="synced"] { background: var(--cyan); border-color: var(--cyan); }
+      .x-pill__dot[data-s="syncing"] { background: var(--amber); border-color: var(--amber); animation: x-pulse 1s ease-in-out infinite alternate; }
+      .x-pill__dot[data-s="offline"], .x-pill__dot[data-s="error"] { border-color: var(--red); }
+      @keyframes x-pulse { to { opacity: 0.35; } }
+      @media (max-width: 520px) { .x-pill__e { display: none; } .x-pill__s::before { content: none !important; } }
+      @media (max-width: 430px) {
+        .x-pill { width: var(--tap); padding: 0; justify-content: center; flex: none; }
+        .x-pill__s, .x-logo span { display: none; }
+      }
+      .x-syncsec { display: flex; flex-direction: column; gap: 10px; }
+      .x-syncform { display: flex; gap: 8px; flex-wrap: wrap; }
+      .x-syncform .x-input { flex: 1 1 220px; width: auto; }
+      .x-input--plain { padding-left: 12px; }
+      .x-syncmail { overflow-wrap: anywhere; }
+      .x-syncbar { justify-content: space-between; }
+      .x-syncbar span { flex: 1 1 200px; }
+      .x-syncbar .x-link { min-height: var(--tap); padding: 0 6px; }
+      .x-syncbar .x-link.is-quiet { color: var(--txt-3); }
+      [hidden] { display: none !important; }
+      .x-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      @media (prefers-reduced-motion: reduce) {
+        * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+        .x-card:hover .x-card__media img { transform: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="x-top">
+      <div class="x-top__in">
+        <div class="x-logo">
+          <b>INK<i>SHELF</i></b>
+          <span>manhwa &amp; ln</span>
+        </div>
+        <div class="x-top__sp"></div>
+        <button class="x-pill" id="acct-pill" type="button" aria-label="Account: Local only">
+          <i class="x-pill__dot" data-s="local"></i><span class="x-pill__e"></span><span class="x-pill__s">Local only</span>
+        </button>
+        <button class="x-iconbtn" id="go-search" aria-label="Search series" title="Search ( / )">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        </button>
+        <button class="x-iconbtn" id="go-settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="x-wrap">
+      <!-- LIBRARY -->
+      <section id="view-library">
+        <div class="x-sechead">
+          <span class="x-sechead__tag">My shelf</span>
+          <span class="x-sechead__rule"></span>
+          <span class="x-sechead__note" id="lib-count">0 series</span>
+        </div>
+        <div class="x-note x-syncbar" id="sync-banner" hidden>
+          <span>Sign in to sync across devices</span>
+          <button type="button" class="x-link" id="sync-banner-go">Sign in</button>
+          <button type="button" class="x-link is-quiet" id="sync-banner-x" aria-label="Dismiss sync banner">Not now</button>
+        </div>
+        <div class="x-tabs" role="tablist" id="lib-tabs"></div>
+        <div class="x-chips" style="margin-top: 14px; align-items: center">
+          <div class="x-chips" id="lib-kind"></div>
+          <span class="x-sechead__rule" style="min-width: 10px"></span>
+          <label class="x-sr" for="lib-sort">Sort</label>
+          <select class="x-select" id="lib-sort">
+            <option value="recent">Recently updated</option>
+            <option value="title">Title A–Z</option>
+            <option value="progress">Progress</option>
+          </select>
+        </div>
+        <div class="x-field" style="margin-top: 10px; max-width: 380px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input class="x-input" id="lib-filter" type="search" placeholder="Filter your shelf…" />
+        </div>
+        <div class="x-grid" id="lib-grid"></div>
+        <div id="lib-empty"></div>
+      </section>
+
+      <!-- SEARCH -->
+      <section id="view-search" hidden>
+        <div class="x-sechead">
+          <span class="x-sechead__tag is-red">Search</span>
+          <span class="x-sechead__rule"></span>
+          <span class="x-sechead__note">anilist · mangadex · jikan</span>
+        </div>
+        <div class="x-panel" style="padding: 12px">
+          <div class="x-searchrow">
+            <div class="x-field">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input class="x-input" id="q" type="search" placeholder="Search a series — try “Omniscient Reader”" autocomplete="off" />
+            </div>
+            <div class="x-seg is-cyan" id="kind-seg" role="group" aria-label="Series type">
+              <button type="button" data-kind="manhwa" aria-pressed="true">Manhwa</button>
+              <button type="button" data-kind="lightnovel" aria-pressed="false">Light novel</button>
+            </div>
+          </div>
+          <p style="margin: 10px 2px 0; font-size: 11px; color: var(--txt-3)">
+            Korean webtoons in Manhwa mode, novels in Light novel mode. Press <b>/</b> anywhere to jump here.
+          </p>
+        </div>
+        <div id="search-out"></div>
+      </section>
+
+      <p class="x-foot">INKSHELF · saved in this browser, synced across devices when you sign in.</p>
+    </main>
+
+    <nav class="x-bottom" aria-label="Sections">
+      <button type="button" data-view="library" aria-current="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h5v14H4zM10 5h4v14h-4zM16 6l4 1-2 12-4-1z"/></svg>
+        Shelf
+      </button>
+      <button type="button" data-view="search" aria-current="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        Search
+      </button>
+      <button type="button" data-view="settings" aria-current="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+        Settings
+      </button>
+    </nav>
+
+    <div class="x-toasts" id="toasts" aria-live="polite"></div>
+    <div id="layer"></div>
+
+    <!-- app: js/store.js + js/api.js + js/ui-library.js + js/ui-search.js + js/main.js + js/sync.js, concatenated in that order -->
+    <script>
+/* ============ INKSHELF · store.js ============
+   The single place shelf data changes. Every write goes through
+   saveItem / removeItem / importJSON, and every write is announced
+   through onChange, so a sync layer (Supabase) can hook in later. */
+(function () {
+  const Ink = (window.Ink = window.Ink || {});
+  const KEY = "inkshelf.v1";
+  const STATUSES = ["plan", "reading", "completed"];
+  const KINDS = ["manhwa", "lightnovel"];
+
+  let items = {};
+  let persistent = true;
+  const subs = new Set();
+
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+
+  function load() {
+    try {
+      const raw = window.localStorage.getItem(KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      items = parsed && parsed.items && typeof parsed.items === "object" ? parsed.items : {};
+    } catch (e) {
+      persistent = false;
+      items = {};
+    }
+  }
+
+  function persist() {
+    if (!persistent) return;
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify({ version: 1, items }));
+    } catch (e) {
+      persistent = false; // quota or private mode: keep working in memory
+    }
+  }
+
+  function emit(change) {
+    subs.forEach((fn) => {
+      try {
+        fn(change);
+      } catch (e) {
+        console.error("[store] listener failed", e);
+      }
+    });
+  }
+
+  function normProgress(p, kind) {
+    p = p || {};
+    const n = (v) => Math.max(0, Math.floor(Number(v) || 0));
+    return {
+      chapter: n(p.chapter),
+      volume: n(p.volume),
+      unit: kind === "lightnovel" && p.unit === "volume" ? "volume" : "chapter",
+    };
+  }
+
+  function normalize(input, prev) {
+    const base = prev || {};
+    const kind = KINDS.includes(input.kind) ? input.kind : base.kind || "manhwa";
+    const status = STATUSES.includes(input.status) ? input.status : base.status || "plan";
+    return {
+      item_key: String(input.item_key || base.item_key),
+      kind,
+      status,
+      progress: normProgress(Object.assign({}, base.progress, input.progress), kind),
+      data: Object.assign({}, base.data, input.data),
+      added_at: base.added_at || input.added_at || Date.now(),
+      updated_at: input.updated_at && input.keepTime ? input.updated_at : Date.now(),
+    };
+  }
+
+  /** Create or update one item. Partial updates merge into the existing item. */
+  function saveItem(input, opts) {
+    if (!input || !input.item_key) throw new Error("saveItem needs an item_key");
+    const prev = items[input.item_key] ? clone(items[input.item_key]) : null;
+    const next = normalize(input, prev);
+    items[next.item_key] = next;
+    persist();
+    emit({ type: prev ? "update" : "add", key: next.item_key, item: clone(next), prev, source: (opts && opts.source) || "local" });
+    return clone(next);
+  }
+
+  function removeItem(key, opts) {
+    const prev = items[key];
+    if (!prev) return null;
+    delete items[key];
+    persist();
+    emit({ type: "remove", key, item: null, prev: clone(prev), source: (opts && opts.source) || "local" });
+    return clone(prev);
+  }
+
+  function getAll() {
+    return Object.values(items).map(clone);
+  }
+
+  function get(key) {
+    return items[key] ? clone(items[key]) : null;
+  }
+
+  function has(key) {
+    return Object.prototype.hasOwnProperty.call(items, key);
+  }
+
+  function onChange(fn) {
+    subs.add(fn);
+    return () => subs.delete(fn);
+  }
+
+  function exportJSON() {
+    return JSON.stringify({ app: "inkshelf", version: 1, exported_at: new Date().toISOString(), items: getAll() }, null, 2);
+  }
+
+  /** Import a previous export. mode "merge" keeps the newer copy of each item; "replace" wipes first. */
+  function importJSON(text, mode) {
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch (e) {
+      throw new Error("That file isn't valid JSON.");
+    }
+    const list = Array.isArray(parsed) ? parsed : parsed && (Array.isArray(parsed.items) ? parsed.items : parsed.items && Object.values(parsed.items));
+    if (!Array.isArray(list)) throw new Error("No shelf items found in that file.");
+    const valid = list.filter((it) => it && it.item_key && it.data && it.data.title);
+    if (mode === "replace") {
+      items = {};
+    }
+    let added = 0;
+    let updated = 0;
+    valid.forEach((it) => {
+      const cur = items[it.item_key];
+      if (cur && (cur.updated_at || 0) >= (it.updated_at || 0)) return;
+      const next = normalize(Object.assign({}, it, { keepTime: true }), null);
+      next.added_at = it.added_at || next.added_at;
+      cur ? updated++ : added++;
+      items[next.item_key] = next;
+    });
+    persist();
+    emit({ type: "import", key: null, item: null, prev: null, source: "import" });
+    return { added, updated, skipped: list.length - added - updated };
+  }
+
+  function counts() {
+    const c = { plan: 0, reading: 0, completed: 0, manhwa: 0, lightnovel: 0, total: 0 };
+    Object.values(items).forEach((it) => {
+      c[it.status]++;
+      c[it.kind]++;
+      c.total++;
+    });
+    return c;
+  }
+
+  // Another tab changed the shelf: reload and announce it.
+  window.addEventListener("storage", (e) => {
+    if (e.key !== KEY) return;
+    load();
+    emit({ type: "external", key: null, item: null, prev: null, source: "storage" });
+  });
+
+  load();
+
+  Ink.store = {
+    STATUSES,
+    KINDS,
+    saveItem,
+    removeItem,
+    getAll,
+    get,
+    has,
+    onChange,
+    exportJSON,
+    importJSON,
+    counts,
+    isPersistent: () => persistent,
+  };
+})();
+/* ============ INKSHELF · api.js ============
+   AniList (primary), MangaDex (covers, last chapter), Jikan (optional).
+   All sources run in parallel with timeouts; results are merged,
+   de-duplicated and fuzzy-ranked. */
+(function () {
+  const Ink = (window.Ink = window.Ink || {});
+  const AL = "https://graphql.anilist.co";
+  const MD = "https://api.mangadex.org";
+  const JK = "https://api.jikan.moe/v4";
+
+  const FIELDS = `id idMal title{romaji english native userPreferred} synonyms format countryOfOrigin status chapters volumes averageScore genres description(asHtml:false) coverImage{extraLarge large color} bannerImage siteUrl startDate{year}`;
+  const Q_FILTERED = `query($s:String,$f:[MediaFormat],$c:CountryCode){Page(perPage:20){media(search:$s,type:MANGA,format_in:$f,countryOfOrigin:$c,sort:SEARCH_MATCH,isAdult:false){${FIELDS}}}}`;
+  const Q_NOVEL = `query($s:String,$f:[MediaFormat]){Page(perPage:20){media(search:$s,type:MANGA,format_in:$f,sort:SEARCH_MATCH,isAdult:false){${FIELDS}}}}`;
+  const Q_ANY = `query($s:String){Page(perPage:20){media(search:$s,type:MANGA,sort:SEARCH_MATCH,isAdult:false){${FIELDS}}}}`;
+  const Q_ID = `query($id:Int){Media(id:$id,type:MANGA){${FIELDS}}}`;
+
+  /* ---------- helpers ---------- */
+  function fetchJSON(url, opts, ms, outer) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    const onOuter = () => ctrl.abort();
+    if (outer) outer.addEventListener("abort", onOuter);
+    return fetch(url, Object.assign({}, opts, { signal: ctrl.signal }))
+      .then((r) => {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .finally(() => {
+        clearTimeout(timer);
+        if (outer) outer.removeEventListener("abort", onOuter);
+      });
+  }
+
+  const norm = (s) =>
+    String(s || "")
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\p{L}\p{N}]+/gu, " ")
+      .trim();
+
+  const stripHtml = (s) =>
+    String(s || "")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<[^>]+>/g, "")
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, "&")
+      .replace(/&#039;/g, "'")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+  function bigrams(s) {
+    const out = new Map();
+    for (let i = 0; i < s.length - 1; i++) {
+      const g = s.slice(i, i + 2);
+      out.set(g, (out.get(g) || 0) + 1);
+    }
+    return out;
+  }
+  function dice(a, b) {
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    const A = bigrams(a);
+    const B = bigrams(b);
+    let hit = 0;
+    A.forEach((n, g) => (hit += Math.min(n, B.get(g) || 0)));
+    return (2 * hit) / (Math.max(1, a.length - 1) + Math.max(1, b.length - 1));
+  }
+  function titleScore(q, t) {
+    const a = norm(q);
+    const b = norm(t);
+    if (!a || !b) return 0;
+    if (a === b) return 100;
+    if (b.startsWith(a)) return 88;
+    if (b.includes(a)) return 76;
+    const qt = a.split(" ");
+    const tt = new Set(b.split(" "));
+    const overlap = qt.filter((w) => tt.has(w)).length / qt.length;
+    return Math.max(overlap * 65, dice(a.replace(/ /g, ""), b.replace(/ /g, "")) * 70);
+  }
+
+  /** Strip subtitles, season tags and filler so a long title can still match. */
+  function simplify(q) {
+    let s = String(q).split(/[:\-–—|(\[]/)[0];
+    s = s.replace(/\b(season|part|vol(ume)?|s)\s*\d+\b/gi, " ").replace(/\b(the|a|an|novel|manhwa|webtoon|ln)\b/gi, " ");
+    s = norm(s).replace(/\s+/g, " ").trim();
+    return s.length >= 2 ? s : norm(q);
+  }
+
+  function kindOf(format, country, fallback) {
+    if (format === "NOVEL" || format === "LIGHT_NOVEL" || format === "lightnovel" || format === "novel") return "lightnovel";
+    if (country === "KR" || country === "ko" || format === "manhwa") return "manhwa";
+    return fallback;
+  }
+
+  /* ---------- sources ---------- */
+  function fromAniList(m, fallbackKind) {
+    const t = m.title || {};
+    return {
+      source: "anilist",
+      anilistId: m.id,
+      malId: m.idMal || null,
+      mdId: null,
+      title: t.english || t.userPreferred || t.romaji || t.native,
+      alt: [t.romaji, t.english, t.native, t.userPreferred].concat(m.synonyms || []).filter(Boolean),
+      cover: (m.coverImage && (m.coverImage.extraLarge || m.coverImage.large)) || "",
+      color: (m.coverImage && m.coverImage.color) || "",
+      banner: m.bannerImage || "",
+      kind: kindOf(m.format, m.countryOfOrigin, fallbackKind),
+      format: m.format || "",
+      country: m.countryOfOrigin || "",
+      status: m.status || "",
+      chapters: m.chapters || null,
+      volumes: m.volumes || null,
+      lastChapter: null,
+      score: m.averageScore || null,
+      genres: m.genres || [],
+      desc: stripHtml(m.description),
+      url: m.siteUrl || "",
+      year: (m.startDate && m.startDate.year) || null,
+    };
+  }
+
+  async function anilist(q, kind, relaxed, signal) {
+    let query = Q_ANY;
+    let variables = { s: q };
+    if (!relaxed && kind === "manhwa") {
+      query = Q_FILTERED;
+      variables = { s: q, f: ["MANGA", "ONE_SHOT"], c: "KR" };
+    } else if (!relaxed) {
+      query = Q_NOVEL;
+      variables = { s: q, f: ["NOVEL"] };
+    }
+    const json = await fetchJSON(
+      AL,
+      { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ query, variables }) },
+      8000,
+      signal
+    );
+    if (json.errors && !json.data) throw new Error(json.errors[0].message);
+    return ((json.data && json.data.Page && json.data.Page.media) || []).map((m) => fromAniList(m, kind));
+  }
+
+  async function mangadex(q, kind, relaxed, signal) {
+    let url = `${MD}/manga?title=${encodeURIComponent(q)}&limit=20&includes[]=cover_art&order[relevance]=desc&contentRating[]=safe&contentRating[]=suggestive`;
+    if (kind === "manhwa" && !relaxed) url += "&originalLanguage[]=ko";
+    const json = await fetchJSON(url, {}, 7000, signal);
+    return (json.data || []).map((d) => {
+      const a = d.attributes || {};
+      const pick = (o) => (o ? o.en || o["ko-ro"] || o["ja-ro"] || o.ko || Object.values(o)[0] : "");
+      const altTitles = (a.altTitles || []).map(pick).filter(Boolean);
+      const art = (d.relationships || []).find((r) => r.type === "cover_art");
+      const file = art && art.attributes && art.attributes.fileName;
+      const lang = a.originalLanguage;
+      return {
+        source: "mangadex",
+        anilistId: a.links && a.links.al ? Number(a.links.al) || null : null,
+        malId: a.links && a.links.mal ? Number(a.links.mal) || null : null,
+        mdId: d.id,
+        title: pick(a.title),
+        alt: [pick(a.title)].concat(altTitles),
+        cover: file ? `https://uploads.mangadex.org/covers/${d.id}/${file}.512.jpg` : "",
+        color: "",
+        banner: "",
+        kind: lang === "ko" ? "manhwa" : kind,
+        format: lang === "ko" ? "MANHWA" : (lang || "").toUpperCase(),
+        country: lang === "ko" ? "KR" : "",
+        status: (a.status || "").toUpperCase(),
+        chapters: null,
+        volumes: a.lastVolume ? Number(a.lastVolume) || null : null,
+        lastChapter: a.lastChapter ? Number(a.lastChapter) || null : null,
+        score: null,
+        genres: (a.tags || []).filter((t) => t.attributes && t.attributes.group === "genre").map((t) => pick(t.attributes.name)).slice(0, 6),
+        desc: stripHtml(pick(a.description)),
+        url: `https://mangadex.org/title/${d.id}`,
+        year: a.year || null,
+      };
+    });
+  }
+
+  async function jikan(q, kind, relaxed, signal) {
+    let url = `${JK}/manga?q=${encodeURIComponent(q)}&limit=15&sfw=true`;
+    if (!relaxed) url += kind === "manhwa" ? "&type=manhwa" : "&type=lightnovel";
+    const json = await fetchJSON(url, {}, 5000, signal);
+    return (json.data || []).map((m) => ({
+      source: "jikan",
+      anilistId: null,
+      malId: m.mal_id,
+      mdId: null,
+      title: m.title_english || m.title,
+      alt: [m.title, m.title_english, m.title_japanese].concat((m.titles || []).map((t) => t.title)).filter(Boolean),
+      cover: (m.images && m.images.jpg && (m.images.jpg.large_image_url || m.images.jpg.image_url)) || "",
+      color: "",
+      banner: "",
+      kind: kindOf((m.type || "").toLowerCase().replace(/\s/g, ""), "", kind),
+      format: (m.type || "").toUpperCase(),
+      country: (m.type || "").toLowerCase() === "manhwa" ? "KR" : "",
+      status: (m.status || "").toUpperCase(),
+      chapters: m.chapters || null,
+      volumes: m.volumes || null,
+      lastChapter: null,
+      score: m.score ? Math.round(m.score * 10) : null,
+      genres: (m.genres || []).map((g) => g.name),
+      desc: stripHtml(m.synopsis),
+      url: m.url || "",
+      year: (m.published && m.published.prop && m.published.prop.from && m.published.prop.from.year) || null,
+    }));
+  }
+
+  /* ---------- merge, rank, search ---------- */
+  function keyOf(r) {
+    if (r.anilistId) return "al:" + r.anilistId;
+    if (r.malId) return "mal:" + r.malId;
+    return "md:" + r.mdId;
+  }
+
+  function mergeInto(a, b) {
+    Object.keys(b).forEach((k) => {
+      if (k === "alt") a.alt = Array.from(new Set(a.alt.concat(b.alt)));
+      else if (k === "genres") a.genres = a.genres.length ? a.genres : b.genres;
+      else if (a[k] == null || a[k] === "") a[k] = b[k];
+    });
+    if (b.source === "mangadex" && b.cover && !a.cover) a.cover = b.cover;
+    a.sources = Array.from(new Set((a.sources || [a.source]).concat(b.source)));
+  }
+
+  function dedupe(list) {
+    const out = [];
+    list.forEach((r) => {
+      const titles = new Set(r.alt.map(norm).filter((t) => t.length > 2));
+      const hit = out.find(
+        (o) =>
+          (r.anilistId && o.anilistId === r.anilistId) ||
+          (r.malId && o.malId === r.malId) ||
+          (r.mdId && o.mdId === r.mdId) ||
+          (!(r.anilistId && o.anilistId) && o.alt.some((t) => titles.has(norm(t))))
+      );
+      if (hit) mergeInto(hit, r);
+      else out.push(Object.assign({ sources: [r.source] }, r));
+    });
+    out.forEach((r) => (r.item_key = keyOf(r)));
+    return out;
+  }
+
+  function rank(list, q, kind) {
+    const order = { anilist: 6, jikan: 3, mangadex: 2 };
+    list.forEach((r) => {
+      const best = Math.max(0, ...r.alt.concat(r.title).map((t) => titleScore(q, t)));
+      r._score = best + (r.kind === kind ? 8 : 0) + (order[r.source] || 0) + Math.min(6, (r.sources.length - 1) * 3) + (r.score ? r.score / 25 : 0) - Math.min(6, Math.max(0, norm(r.title).length - norm(q).length) / 10);
+      r._match = best;
+    });
+    return list.filter((r) => r._match >= 25 || r.sources.includes("anilist")).sort((a, b) => b._score - a._score);
+  }
+
+  async function runOnce(q, kind, relaxed, signal) {
+    const jobs = [
+      ["AniList", anilist(q, kind, relaxed, signal)],
+      ["MangaDex", mangadex(q, kind, relaxed, signal)],
+      ["Jikan", jikan(q, kind, relaxed, signal)],
+    ];
+    const settled = await Promise.allSettled(jobs.map((j) => j[1]));
+    const errors = [];
+    let all = [];
+    settled.forEach((s, i) => {
+      if (s.status === "fulfilled") all = all.concat(s.value);
+      else errors.push(jobs[i][0]);
+    });
+    let merged = dedupe(all);
+    // MangaDex hosts comics only: in LN mode a MangaDex-only hit is an adaptation, not the novel.
+    if (kind === "lightnovel") merged = merged.filter((r) => !(r.sources.length === 1 && r.sources[0] === "mangadex"));
+    return { results: rank(merged, q, kind), errors };
+  }
+
+  /**
+   * search(q, kind, {signal, onStage}) → {results, errors, stage}
+   * Stages: exact query → simplified query → relaxed type filter.
+   */
+  async function search(q, kind, opts) {
+    const signal = opts && opts.signal;
+    const onStage = (opts && opts.onStage) || function () {};
+    const errs = new Set();
+    const stages = [
+      { q, relaxed: false, name: "exact" },
+      { q: simplify(q), relaxed: false, name: "simplified" },
+      { q: simplify(q), relaxed: true, name: "relaxed" },
+    ].filter((s, i, arr) => i === 0 || s.q !== arr[i - 1].q || s.relaxed !== arr[i - 1].relaxed);
+    for (const st of stages) {
+      if (signal && signal.aborted) throw new DOMException("aborted", "AbortError");
+      onStage(st.name);
+      const res = await runOnce(st.q, kind, st.relaxed, signal);
+      res.errors.forEach((e) => errs.add(e));
+      if (res.results.length) return { results: res.results, errors: Array.from(errs), stage: st.name };
+    }
+    if (signal && signal.aborted) throw new DOMException("aborted", "AbortError");
+    return { results: [], errors: Array.from(errs), stage: "done" };
+  }
+
+  async function refreshById(anilistId) {
+    const json = await fetchJSON(
+      AL,
+      { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ query: Q_ID, variables: { id: Number(anilistId) } }) },
+      8000
+    );
+    const m = json.data && json.data.Media;
+    if (!m) throw new Error("Not found on AniList");
+    const r = fromAniList(m, kindOf(m.format, m.countryOfOrigin, "manhwa"));
+    r.sources = ["anilist"];
+    r.item_key = keyOf(r);
+    return r;
+  }
+
+  Ink.api = { search, refreshById, simplify, titleScore, norm, keyOf };
+})();
+/* ============ INKSHELF · ui-library.js ============
+   The shelf: status tabs, kind chips, sort, filter, cards with
+   chapter controls. Reads with store.getAll, writes only via store. */
+(function () {
+  const Ink = (window.Ink = window.Ink || {});
+  const $ = (s) => document.querySelector(s);
+  const LABEL = { plan: "Plan", reading: "Reading", completed: "Completed" };
+  const PREFS = "inkshelf.prefs";
+
+  const state = { tab: "reading", kind: "all", sort: "recent", filter: "" };
+  try {
+    Object.assign(state, JSON.parse(localStorage.getItem(PREFS) || "{}"));
+  } catch (e) {}
+  state.filter = "";
+  const savePrefs = () => {
+    try {
+      localStorage.setItem(PREFS, JSON.stringify({ tab: state.tab, kind: state.kind, sort: state.sort }));
+    } catch (e) {}
+  };
+
+  const unitOf = (it) => (it.kind === "lightnovel" ? it.progress.unit : "chapter");
+  const valueOf = (it) => (unitOf(it) === "volume" ? it.progress.volume : it.progress.chapter);
+  const totalOf = (it) => {
+    const d = it.data || {};
+    return unitOf(it) === "volume" ? d.volumes || null : d.chapters || d.lastChapter || null;
+  };
+  const pctOf = (it) => {
+    const t = totalOf(it);
+    if (it.status === "completed") return 100;
+    return t ? Math.min(100, Math.round((valueOf(it) / t) * 100)) : 0;
+  };
+
+  function visible() {
+    const f = Ink.api.norm(state.filter);
+    let list = Ink.store.getAll().filter((it) => state.kind === "all" || it.kind === state.kind);
+    const byKind = list.slice();
+    list = list.filter((it) => it.status === state.tab);
+    if (f) list = list.filter((it) => [it.data.title].concat(it.data.alt || []).some((t) => Ink.api.norm(t).includes(f)));
+    const cmp = {
+      recent: (a, b) => b.updated_at - a.updated_at,
+      title: (a, b) => String(a.data.title).localeCompare(String(b.data.title)),
+      progress: (a, b) => pctOf(b) - pctOf(a) || valueOf(b) - valueOf(a),
+    }[state.sort] || ((a, b) => b.updated_at - a.updated_at);
+    return { list: list.sort(cmp), byKind };
+  }
+
+  function card(it) {
+    const esc = Ink.ui.esc;
+    const d = it.data || {};
+    const c = /^#[0-9a-f]{3,8}$/i.test(d.color || "") ? d.color : it.kind === "lightnovel" ? "#f59e0b" : "#22d3ee";
+    const unit = unitOf(it);
+    const total = totalOf(it);
+    const isLN = it.kind === "lightnovel";
+    const short = unit === "volume" ? "Vol" : "Ch";
+    const meta = `${short} ${valueOf(it)}${total ? " / " + total : ""}${d.status ? " · " + Ink.ui.fmtStatus(d.status) : ""}`;
+    return `<article class="x-card" data-key="${esc(it.item_key)}" style="--glow:${c};background:linear-gradient(180deg,color-mix(in srgb,${c} 16%,var(--ink-2)),var(--ink-2) 62%)">
+  <div class="x-card__media">
+    ${d.cover ? `<img src="${esc(d.cover)}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : `<div style="position:absolute;inset:0;display:grid;place-items:center;padding:10px;text-align:center" class="x-bebas">${esc(d.title)}</div>`}
+    <span class="x-badge ${isLN ? "is-ln" : "is-manhwa"}">${isLN ? "LN" : "Manhwa"}</span>
+    ${d.score ? `<span class="x-score">★ ${d.score}%</span>` : ""}
+    <button class="x-card__open" data-act="open" aria-label="Details for ${esc(d.title)}"></button>
+  </div>
+  <div class="x-card__body">
+    <div class="x-card__title" title="${esc(d.title)}">${esc(d.title)}</div>
+    <div class="x-card__meta">${esc(meta)}${isLN ? ` · <button class="x-unit" data-act="unit" aria-label="Track by ${unit === "volume" ? "chapter" : "volume"}">by ${unit}</button>` : ""}</div>
+    <div class="x-bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pctOf(it)}"><i style="width:${pctOf(it)}%"></i></div>
+    <div class="x-prog">
+      <button class="x-step" data-act="dec" aria-label="Minus one ${unit}">−</button>
+      <label class="x-num" style="display:flex;align-items:center"><span class="x-sr">Current ${unit}</span><input data-act="set" type="number" inputmode="numeric" min="0" value="${valueOf(it)}" /></label>
+      <button class="x-step" data-act="inc" aria-label="Plus one ${unit}">+</button>
+    </div>
+    <div class="x-card__acts">
+      <button class="x-mini" data-act="move" aria-haspopup="menu">Move to</button>
+      <button class="x-mini is-danger" data-act="remove" aria-label="Remove ${esc(d.title)}">Remove</button>
+    </div>
+  </div>
+</article>`;
+  }
+
+  function render() {
+    const esc = Ink.ui.esc;
+    const { list, byKind } = visible();
+    const all = Ink.store.getAll();
+    const cnt = (s) => byKind.filter((it) => it.status === s).length;
+
+    $("#lib-count").textContent = `${all.length} series`;
+    $("#lib-tabs").innerHTML = Ink.store.STATUSES.map(
+      (s) => `<button class="x-tab" role="tab" data-tab="${s}" aria-selected="${state.tab === s}">${LABEL[s]}<em>${cnt(s)}</em></button>`
+    ).join("");
+    const kc = { all: all.length, manhwa: all.filter((i) => i.kind === "manhwa").length, lightnovel: all.filter((i) => i.kind === "lightnovel").length };
+    $("#lib-kind").innerHTML = [
+      ["all", "All"],
+      ["manhwa", "Manhwa"],
+      ["lightnovel", "LN"],
+    ]
+      .map(([k, l]) => `<button class="x-chip" data-kind="${k}" aria-pressed="${state.kind === k}">${l} · ${kc[k]}</button>`)
+      .join("");
+    $("#lib-sort").value = state.sort;
+
+    $("#lib-grid").innerHTML = list.map(card).join("");
+    const empty = $("#lib-empty");
+    if (list.length) {
+      empty.innerHTML = "";
+      return;
+    }
+    let title = "Your shelf is empty";
+    let text = "Search a manhwa or light novel and add it to start tracking chapters.";
+    if (all.length && state.filter) {
+      title = "Nothing matches";
+      text = `No ${LABEL[state.tab].toLowerCase()} series match “${state.filter}”.`;
+    } else if (all.length) {
+      title = `Nothing in ${LABEL[state.tab]}`;
+      text = state.tab === "reading" ? "Start a series from Plan, or find a new one." : state.tab === "completed" ? "Finished series land here." : "Save series you want to read later.";
+    }
+    empty.innerHTML = `<div class="x-empty"><div class="x-bubble"><h3>${esc(title)}</h3><p>${esc(text)}</p></div>
+      <div class="x-btns" style="justify-content:center;margin-top:26px"><button class="x-btn is-primary" data-act="find">Find a series</button></div></div>`;
+  }
+
+  /* ---------- actions (all writes go through the store) ---------- */
+  function setProgress(key, value) {
+    const it = Ink.store.get(key);
+    if (!it) return;
+    const unit = unitOf(it);
+    const total = totalOf(it);
+    let v = Math.max(0, Math.floor(Number(value) || 0));
+    if (total && v > total) v = total;
+    const progress = Object.assign({}, it.progress, { [unit]: v });
+    const patch = { item_key: key, progress };
+    if (it.status === "plan" && v > 0) {
+      patch.status = "reading";
+      Ink.ui.toast(`Moved “${it.data.title}” to Reading`);
+    }
+    Ink.store.saveItem(patch);
+    if (total && v >= total && it.status !== "completed") {
+      Ink.ui.toast(`That's the last ${unit} of “${it.data.title}”. Mark it completed?`, {
+        action: "Mark completed",
+        timeout: 8000,
+        onAction: () => move(key, "completed"),
+      });
+    }
+  }
+
+  function move(key, status) {
+    const it = Ink.store.get(key);
+    if (!it || it.status === status) return;
+    Ink.store.saveItem({ item_key: key, status });
+    Ink.ui.toast(`“${it.data.title}” → ${LABEL[status]}`, { action: "Undo", onAction: () => Ink.store.saveItem({ item_key: key, status: it.status }) });
+  }
+
+  function remove(key) {
+    const prev = Ink.store.removeItem(key);
+    if (!prev) return;
+    Ink.ui.toast(`Removed “${prev.data.title}”`, {
+      action: "Undo",
+      timeout: 7000,
+      onAction: () => Ink.store.saveItem(Object.assign({}, prev, { keepTime: true })),
+    });
+  }
+
+  async function refresh(key) {
+    const it = Ink.store.get(key);
+    if (!it || !it.data.anilistId) return Ink.ui.toast("Only AniList entries can be refreshed.");
+    try {
+      const r = await Ink.api.refreshById(it.data.anilistId);
+      Ink.store.saveItem({ item_key: key, data: Ink.search.toData(r) });
+      Ink.ui.toast(`Updated “${r.title}”`);
+    } catch (e) {
+      Ink.ui.toast("AniList didn't respond — try again later.");
+    }
+  }
+
+  function openMove(btn, key) {
+    const it = Ink.store.get(key);
+    const opts = Ink.store.STATUSES.filter((s) => s !== it.status).map((s) => ({ label: `Move to ${LABEL[s]}`, onClick: () => move(key, s) }));
+    if (it.data.anilistId) opts.push("hr", { label: "Refresh info", onClick: () => refresh(key) });
+    opts.push("hr", { label: "Remove from shelf", onClick: () => remove(key) });
+    Ink.ui.openMenu(btn, opts);
+  }
+
+  function bind() {
+    $("#lib-tabs").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-tab]");
+      if (!b) return;
+      state.tab = b.dataset.tab;
+      savePrefs();
+      render();
+    });
+    $("#lib-kind").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-kind]");
+      if (!b) return;
+      state.kind = b.dataset.kind;
+      savePrefs();
+      render();
+    });
+    $("#lib-sort").addEventListener("change", (e) => {
+      state.sort = e.target.value;
+      savePrefs();
+      render();
+    });
+    $("#lib-filter").addEventListener("input", (e) => {
+      state.filter = e.target.value;
+      render();
+    });
+    $("#lib-empty").addEventListener("click", (e) => {
+      if (e.target.closest('[data-act="find"]')) Ink.main.show("search");
+    });
+
+    const grid = $("#lib-grid");
+    grid.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-act]");
+      const cardEl = e.target.closest(".x-card");
+      if (!b || !cardEl) return;
+      const key = cardEl.dataset.key;
+      const it = Ink.store.get(key);
+      if (!it) return;
+      const act = b.dataset.act;
+      if (act === "inc") setProgress(key, valueOf(it) + 1);
+      else if (act === "dec") setProgress(key, valueOf(it) - 1);
+      else if (act === "unit") Ink.store.saveItem({ item_key: key, progress: { unit: unitOf(it) === "volume" ? "chapter" : "volume" } });
+      else if (act === "move") openMove(b, key);
+      else if (act === "remove") remove(key);
+      else if (act === "open") Ink.search.openDetail(Object.assign({}, it.data, { item_key: key, kind: it.kind }));
+    });
+    grid.addEventListener("change", (e) => {
+      const inp = e.target.closest('input[data-act="set"]');
+      if (inp) setProgress(inp.closest(".x-card").dataset.key, inp.value);
+    });
+    grid.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && e.target.matches('input[data-act="set"]')) e.target.blur();
+    });
+
+    // Tilt on hover (mouse only, off under reduced motion)
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+    grid.addEventListener("pointermove", (e) => {
+      if (e.pointerType !== "mouse" || still.matches) return;
+      const c = e.target.closest(".x-card");
+      if (!c) return;
+      const r = c.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      c.style.transform = `perspective(700px) rotateY(${x * 7}deg) rotateX(${-y * 7}deg) translateY(-3px)`;
+    });
+    grid.addEventListener(
+      "pointerout",
+      (e) => {
+        const c = e.target.closest(".x-card");
+        if (c && !c.contains(e.relatedTarget)) c.style.transform = "";
+      },
+      true
+    );
+
+    Ink.store.onChange(render);
+  }
+
+  Ink.library = {
+    init() {
+      bind();
+      render();
+    },
+    render,
+    setTab(t) {
+      state.tab = t;
+      savePrefs();
+      render();
+    },
+    LABEL,
+  };
+})();
+/* ============ INKSHELF · ui-search.js ============
+   Search box with Manhwa | Light novel toggle, debounced queries,
+   result rows and the detail sheet with add buttons. */
+(function () {
+  const Ink = (window.Ink = window.Ink || {});
+  const $ = (s) => document.querySelector(s);
+  const PREF = "inkshelf.searchKind";
+
+  let kind = "manhwa";
+  try {
+    if (localStorage.getItem(PREF) === "lightnovel") kind = "lightnovel";
+  } catch (e) {}
+  let timer = null;
+  let ctrl = null;
+  let results = [];
+  let lastQ = "";
+
+  /** The subset of a result that is stored on a shelf item. */
+  function toData(r) {
+    return {
+      title: r.title,
+      alt: (r.alt || []).filter((t) => t !== r.title).slice(0, 8),
+      cover: r.cover || "",
+      color: r.color || "",
+      banner: r.banner || "",
+      format: r.format || "",
+      country: r.country || "",
+      status: r.status || "",
+      chapters: r.chapters || null,
+      volumes: r.volumes || null,
+      lastChapter: r.lastChapter || null,
+      score: r.score || null,
+      genres: (r.genres || []).slice(0, 8),
+      desc: (r.desc || "").slice(0, 1600),
+      url: r.url || "",
+      year: r.year || null,
+      anilistId: r.anilistId || null,
+      malId: r.malId || null,
+      mdId: r.mdId || null,
+      sources: r.sources || [r.source].filter(Boolean),
+    };
+  }
+
+  const flag = (k) => (k === "lightnovel" ? `<span class="x-flag is-ln">LN</span>` : `<span class="x-flag is-manhwa">Manhwa</span>`);
+
+  function setKind(k) {
+    kind = k;
+    try {
+      localStorage.setItem(PREF, k);
+    } catch (e) {}
+    const seg = $("#kind-seg");
+    seg.className = "x-seg " + (k === "lightnovel" ? "is-amber" : "is-cyan");
+    seg.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.kind === k)));
+    if ($("#q").value.trim()) run($("#q").value, true);
+  }
+
+  function skeleton(note) {
+    $("#search-out").innerHTML =
+      `<p class="x-row__s" style="margin:14px 2px 0">${Ink.ui.esc(note)}</p><div class="x-res">` +
+      Array.from({ length: 6 }, () => `<div class="x-skel" style="height:118px"></div>`).join("") +
+      `</div>`;
+  }
+
+  function row(r, i) {
+    const esc = Ink.ui.esc;
+    const on = Ink.store.get(r.item_key);
+    const bits = [r.format && r.format.replace(/_/g, " "), r.year, r.status && Ink.ui.fmtStatus(r.status)].filter(Boolean).join(" · ");
+    const count = r.chapters ? `${r.chapters} ch` : r.lastChapter ? `${r.lastChapter} ch so far` : r.volumes ? `${r.volumes} vol` : "";
+    return `<button class="x-row" data-i="${i}" type="button">
+  <span class="x-row__cover">${r.cover ? `<img src="${esc(r.cover)}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : ""}</span>
+  <span class="x-row__main">
+    <span>${flag(r.kind)}</span>
+    <span class="x-row__t">${esc(r.title)}</span>
+    <span class="x-row__s">${esc(bits)}${count ? " · " + esc(count) : ""}${r.score ? " · ★ " + r.score + "%" : ""}</span>
+    <span class="x-tags">${on ? `<span class="x-tag" style="border-color:var(--red);color:var(--txt)">On shelf · ${Ink.library.LABEL[on.status]}</span>` : ""}${(r.genres || [])
+      .slice(0, 3)
+      .map((g) => `<span class="x-tag">${esc(g)}</span>`)
+      .join("")}</span>
+  </span>
+</button>`;
+  }
+
+  function renderResults(res, q) {
+    const esc = Ink.ui.esc;
+    results = res.results;
+    const out = $("#search-out");
+    const retry = `<div class="x-note"><span>Some sources didn't respond${res.errors.length ? " (" + esc(res.errors.join(", ")) + ")" : ""}.</span><button class="x-link" data-act="retry">Retry</button></div>`;
+    if (results.length) {
+      out.innerHTML = (res.errors.length ? retry : "") + `<div class="x-res">${results.slice(0, 24).map(row).join("")}</div>`;
+      return;
+    }
+    if (res.errors.length) {
+      out.innerHTML = retry;
+      return;
+    }
+    out.innerHTML = `<div class="x-empty"><div class="x-bubble"><h3>No match yet</h3><p>Couldn't find “${esc(q)}” yet — try the Korean or romanized title.</p></div></div>`;
+  }
+
+  async function run(raw, now) {
+    const q = String(raw || "").trim();
+    clearTimeout(timer);
+    if (q.length < 2) {
+      if (ctrl) ctrl.abort();
+      $("#search-out").innerHTML = "";
+      lastQ = "";
+      return;
+    }
+    const go = async () => {
+      if (ctrl) ctrl.abort();
+      ctrl = new AbortController();
+      const mine = ctrl;
+      lastQ = q;
+      skeleton(`Searching ${kind === "lightnovel" ? "light novels" : "manhwa"} for “${q}”…`);
+      try {
+        const res = await Ink.api.search(q, kind, {
+          signal: mine.signal,
+          onStage: (s) => {
+            if (mine !== ctrl) return;
+            if (s === "simplified") skeleton("No exact hit — trying a simpler title…");
+            if (s === "relaxed") skeleton("Widening the search to every format…");
+          },
+        });
+        if (mine !== ctrl) return;
+        renderResults(res, q);
+      } catch (e) {
+        if (e && e.name === "AbortError" && mine !== ctrl) return;
+        if (mine !== ctrl) return;
+        renderResults({ results: [], errors: ["all sources"] }, q);
+      }
+    };
+    if (now) go();
+    else timer = setTimeout(go, 400);
+  }
+
+  /* ---------- detail sheet ---------- */
+  function openDetail(r) {
+    const esc = Ink.ui.esc;
+    const on = Ink.store.get(r.item_key);
+    const k = (on && on.kind) || r.kind || kind;
+    const facts = [
+      ["Chapters", r.chapters || (r.lastChapter ? r.lastChapter + " so far" : "—")],
+      ["Volumes", r.volumes || "—"],
+      ["Status", r.status ? Ink.ui.fmtStatus(r.status) : "—"],
+      ["Score", r.score ? r.score + "%" : "—"],
+      ["Year", r.year || "—"],
+    ];
+    const native = (r.alt || []).find((t) => /[\uac00-\ud7af\u3040-\u30ff\u4e00-\u9fff]/.test(t));
+    const src = (r.sources || [r.source]).filter(Boolean).join(" · ");
+    const statusBtns = Ink.store.STATUSES.map((s) => {
+      const label = on ? (on.status === s ? `✓ ${Ink.library.LABEL[s]}` : `Move to ${Ink.library.LABEL[s]}`) : { plan: "Add to Plan", reading: "Start reading", completed: "Mark completed" }[s];
+      const primary = !on && s === "reading" ? " is-primary" : "";
+      return `<button class="x-btn${primary}" data-add="${s}" aria-pressed="${!!on && on.status === s}">${label}</button>`;
+    }).join("");
+    const html = `<div class="x-sheet__banner">${r.banner || r.cover ? `<img src="${esc(r.banner || r.cover)}" alt="" referrerpolicy="no-referrer" />` : ""}
+    <button class="x-iconbtn x-sheet__close" data-close aria-label="Close">✕</button></div>
+  <div class="x-sheet__in">
+    <div style="display:flex;gap:14px;align-items:flex-end;margin-top:-64px;position:relative;z-index:2">
+      ${r.cover ? `<img src="${esc(r.cover)}" alt="" referrerpolicy="no-referrer" style="width:92px;aspect-ratio:2/3;object-fit:cover;border-radius:10px;border:1px solid var(--line-2)" />` : ""}
+      <div style="min-width:0">${flag(k)}<h2 id="sheet-title" style="margin-top:6px">${esc(r.title)}</h2>${native ? `<p class="x-row__s" style="margin:4px 0 0">${esc(native)}</p>` : ""}</div>
+    </div>
+    <dl class="x-dl">${facts.map(([a, b]) => `<div><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl>
+    ${r.genres && r.genres.length ? `<div class="x-tags">${r.genres.map((g) => `<span class="x-tag">${esc(g)}</span>`).join("")}</div>` : ""}
+    ${r.desc ? `<div><p class="x-desc is-clamped" id="sheet-desc" style="white-space:pre-line;margin:0">${esc(r.desc)}</p><button class="x-link" data-more>More</button></div>` : ""}
+    ${on ? `<p class="x-row__s" style="margin:0">On your shelf in <b style="color:var(--txt)">${Ink.library.LABEL[on.status]}</b>.</p>` : ""}
+    <div class="x-btns">${statusBtns}</div>
+    <p class="x-row__s" style="margin:0">${src ? "From " + esc(src) : ""}${r.url ? ` · <a href="${esc(r.url)}" target="_blank" rel="noopener">Open source page</a>` : ""}</p>
+  </div>`;
+
+    Ink.ui.openSheet(html, (sheet) => {
+      const more = sheet.querySelector("[data-more]");
+      if (more)
+        more.addEventListener("click", () => {
+          const d = sheet.querySelector("#sheet-desc");
+          const c = d.classList.toggle("is-clamped");
+          more.textContent = c ? "More" : "Less";
+        });
+      sheet.querySelectorAll("[data-add]").forEach((b) =>
+        b.addEventListener("click", () => {
+          add(r, b.dataset.add, k);
+          Ink.ui.closeSheet();
+        })
+      );
+    });
+  }
+
+  function add(r, status, k) {
+    const cur = Ink.store.get(r.item_key);
+    if (cur) {
+      if (cur.status !== status) Ink.store.saveItem({ item_key: r.item_key, status });
+      Ink.ui.toast(`“${r.title}” → ${Ink.library.LABEL[status]}`);
+      return;
+    }
+    const total = r.chapters || r.lastChapter || 0;
+    const progress = status === "completed" ? { chapter: total, volume: r.volumes || 0 } : {};
+    Ink.store.saveItem({ item_key: r.item_key, kind: k, status, progress, data: toData(r) });
+    Ink.ui.toast(`Added “${r.title}” to ${Ink.library.LABEL[status]}`, {
+      action: "View",
+      onAction: () => {
+        Ink.library.setTab(status);
+        Ink.main.show("library");
+      },
+    });
+    if (results.length) renderResults({ results, errors: [] }, lastQ);
+  }
+
+  function bind() {
+    const input = $("#q");
+    input.addEventListener("input", () => run(input.value));
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") run(input.value, true);
+    });
+    $("#kind-seg").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-kind]");
+      if (!b) return;
+      if (b.dataset.kind !== kind) return setKind(b.dataset.kind);
+      if (input.value.trim()) return run(input.value, true);
+      input.focus();
+      Ink.ui.toast(`Searching ${kind === "lightnovel" ? "light novels" : "manhwa"} — type a title.`);
+    });
+    $("#search-out").addEventListener("click", (e) => {
+      if (e.target.closest('[data-act="retry"]')) return run(lastQ || input.value, true);
+      const b = e.target.closest(".x-row[data-i]");
+      if (b && results[b.dataset.i]) openDetail(results[b.dataset.i]);
+    });
+  }
+
+  Ink.search = {
+    init() {
+      bind();
+      setKind(kind);
+    },
+    openDetail,
+    toData,
+    focus() {
+      const i = $("#q");
+      i.focus();
+      i.select();
+    },
+  };
+})();
+/* ============ INKSHELF · main.js ============
+   Shared UI helpers (toasts, sheet, menu), view switching,
+   keyboard shortcuts and the settings sheet. Boots the app. */
+(function () {
+  const Ink = (window.Ink = window.Ink || {});
+  const $ = (s) => document.querySelector(s);
+
+  /* ---------- helpers ---------- */
+  const esc = (s) =>
+    String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  const STATUS_TXT = { FINISHED: "Finished", RELEASING: "Releasing", ONGOING: "Ongoing", COMPLETED: "Completed", NOT_YET_RELEASED: "Upcoming", CANCELLED: "Cancelled", HIATUS: "Hiatus", PUBLISHING: "Releasing", "ON HIATUS": "Hiatus", DISCONTINUED: "Cancelled" };
+  const fmtStatus = (s) => STATUS_TXT[String(s).toUpperCase()] || String(s).charAt(0) + String(s).slice(1).toLowerCase().replace(/_/g, " ");
+
+  function toast(msg, opts) {
+    opts = opts || {};
+    const box = $("#toasts");
+    const t = document.createElement("div");
+    t.className = "x-toast";
+    t.setAttribute("role", "status");
+    t.innerHTML = `<span>${esc(msg)}</span>${opts.action ? `<button type="button">${esc(opts.action)}</button>` : ""}`;
+    const close = () => {
+      clearTimeout(timer);
+      t.remove();
+    };
+    const timer = setTimeout(close, opts.timeout || 4500);
+    if (opts.action)
+      t.querySelector("button").addEventListener("click", () => {
+        close();
+        if (opts.onAction) opts.onAction();
+      });
+    box.appendChild(t);
+    while (box.children.length > 3) box.firstElementChild.remove();
+    return close;
+  }
+
+  let lastFocus = null;
+  function openSheet(html, onMount) {
+    closeMenu();
+    const layer = $("#layer");
+    if (!layer.innerHTML) lastFocus = document.activeElement;
+    layer.innerHTML = `<div class="x-scrim" data-close></div><div class="x-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">${html}</div>`;
+    const sheet = layer.querySelector(".x-sheet");
+    layer.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeSheet));
+    sheet.addEventListener("keydown", (e) => {
+      if (e.key !== "Tab") return;
+      const f = sheet.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (!f.length) return;
+      const first = f[0];
+      const last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+    document.body.style.overflow = "hidden";
+    if (onMount) onMount(sheet);
+    const focusable = sheet.querySelector("[data-add], .x-btn, button");
+    if (focusable) focusable.focus({ preventScroll: true });
+  }
+  function closeSheet() {
+    const layer = $("#layer");
+    if (!layer.innerHTML) return false;
+    layer.innerHTML = "";
+    document.body.style.overflow = "";
+    if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
+    lastFocus = null;
+    return true;
+  }
+
+  let menuEl = null;
+  function openMenu(anchor, items) {
+    closeMenu();
+    const m = document.createElement("div");
+    m.className = "x-menu";
+    m.setAttribute("role", "menu");
+    items.forEach((it) => {
+      if (it === "hr") return m.appendChild(document.createElement("hr"));
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("role", "menuitem");
+      b.textContent = it.label;
+      b.addEventListener("click", () => {
+        closeMenu();
+        it.onClick();
+      });
+      m.appendChild(b);
+    });
+    document.body.appendChild(m);
+    const r = anchor.getBoundingClientRect();
+    const w = m.offsetWidth;
+    const h = m.offsetHeight;
+    const below = r.bottom + 6 + h < window.innerHeight - 70;
+    m.style.left = Math.max(8, Math.min(r.left + window.scrollX, window.scrollX + window.innerWidth - w - 8)) + "px";
+    m.style.top = (below ? r.bottom + 6 : r.top - h - 6) + window.scrollY + "px";
+    menuEl = m;
+    const first = m.querySelector("button");
+    if (first) first.focus({ preventScroll: true });
+    setTimeout(() => document.addEventListener("pointerdown", outside, true), 0);
+  }
+  function outside(e) {
+    if (menuEl && !menuEl.contains(e.target)) closeMenu();
+  }
+  function closeMenu() {
+    document.removeEventListener("pointerdown", outside, true);
+    if (!menuEl) return false;
+    menuEl.remove();
+    menuEl = null;
+    return true;
+  }
+
+  Ink.ui = { esc, fmtStatus, toast, openSheet, closeSheet, openMenu, closeMenu };
+
+  /* ---------- views ---------- */
+  let view = "library";
+  function show(v) {
+    if (v === "settings") return openSettings();
+    view = v;
+    $("#view-library").hidden = v !== "library";
+    $("#view-search").hidden = v !== "search";
+    document.querySelectorAll(".x-bottom [data-view]").forEach((b) => b.setAttribute("aria-current", String(b.dataset.view === v)));
+    window.scrollTo({ top: 0 });
+    if (v === "search") Ink.search.focus();
+  }
+
+  /* ---------- settings ---------- */
+  function openSettings() {
+    const c = Ink.store.counts();
+    const saved = Ink.store.isPersistent();
+    Ink.ui.openSheet(
+      `<div class="x-sheet__in">
+    <div style="display:flex;align-items:center;gap:10px"><h2 id="sheet-title" style="flex:1">Settings</h2><button class="x-iconbtn" data-close aria-label="Close">✕</button></div>
+    <dl class="x-dl">
+      <div><dt>Series</dt><dd>${c.total}</dd></div>
+      <div><dt>Reading</dt><dd>${c.reading}</dd></div>
+      <div><dt>Manhwa · LN</dt><dd>${c.manhwa} · ${c.lightnovel}</dd></div>
+      <div><dt>Storage</dt><dd>${saved ? "This browser" : "Memory only"}</dd></div>
+    </dl>
+    ${saved ? "" : `<div class="x-note">This browser blocks local storage, so the shelf lasts only until you close the tab. Export it to keep a copy.</div>`}
+    ${Ink.sync ? `<div><h3 style="font-size:22px;margin-bottom:8px">Account &amp; sync</h3>${Ink.sync.sectionHTML()}</div>` : ""}
+    <div><h3 style="font-size:22px;margin-bottom:8px">Back up</h3>
+      <p class="x-desc" style="margin:0 0 10px">Download your shelf as a JSON file.</p>
+      <div class="x-btns"><button class="x-btn is-primary" id="set-export">Export JSON</button></div></div>
+    <div><h3 style="font-size:22px;margin-bottom:8px">Restore</h3>
+      <p class="x-desc" style="margin:0 0 10px">Merge keeps the newer copy of each series. Replace wipes the shelf first.</p>
+      <div class="x-btns" style="align-items:center">
+        <div class="x-seg" id="set-mode" role="group" aria-label="Import mode"><button type="button" data-mode="merge" aria-pressed="true">Merge</button><button type="button" data-mode="replace" aria-pressed="false">Replace</button></div>
+        <label class="x-btn" style="display:inline-flex;align-items:center">Import JSON<input type="file" id="set-file" accept="application/json,.json" class="x-sr" /></label>
+      </div></div>
+    <p class="x-row__s" style="margin:0">Shortcuts: <b>/</b> search · <b>Esc</b> close</p>
+  </div>`,
+      (sheet) => {
+        if (Ink.sync) Ink.sync.bind(sheet);
+        let mode = "merge";
+        sheet.querySelector("#set-mode").addEventListener("click", (e) => {
+          const b = e.target.closest("[data-mode]");
+          if (!b) return;
+          mode = b.dataset.mode;
+          sheet.querySelectorAll("#set-mode button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        });
+        sheet.querySelector("#set-export").addEventListener("click", () => {
+          const blob = new Blob([Ink.store.exportJSON()], { type: "application/json" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = `inkshelf-${new Date().toISOString().slice(0, 10)}.json`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            URL.revokeObjectURL(a.href);
+            a.remove();
+          }, 500);
+          toast(`Exported ${Ink.store.counts().total} series`);
+        });
+        sheet.querySelector("#set-file").addEventListener("change", (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          if (mode === "replace" && Ink.store.counts().total && !window.confirm("Replace your whole shelf with this file?")) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const r = Ink.store.importJSON(String(reader.result), mode);
+              closeSheet();
+              toast(`Imported: ${r.added} new, ${r.updated} updated${r.skipped ? `, ${r.skipped} skipped` : ""}`);
+            } catch (err) {
+              toast(err.message || "Import failed");
+            }
+          };
+          reader.onerror = () => toast("Couldn't read that file.");
+          reader.readAsText(file);
+        });
+      }
+    );
+  }
+
+  /* ---------- shortcuts ---------- */
+  function typing(el) {
+    return el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable);
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey && !typing(document.activeElement)) {
+      e.preventDefault();
+      closeMenu();
+      closeSheet();
+      show("search");
+    } else if (e.key === "Escape") {
+      if (closeMenu()) return;
+      if (closeSheet()) return;
+      if (document.activeElement && document.activeElement.id === "q") document.activeElement.blur();
+    }
+  });
+
+  function init() {
+    Ink.library.init();
+    Ink.search.init();
+    document.querySelectorAll(".x-bottom [data-view]").forEach((b) => b.addEventListener("click", () => show(b.dataset.view)));
+    $("#go-search").addEventListener("click", () => show("search"));
+    $("#go-settings").addEventListener("click", openSettings);
+    window.addEventListener("resize", closeMenu);
+    if (!Ink.store.isPersistent()) toast("Storage is blocked here — your shelf will last only this session.", { timeout: 7000 });
+  }
+
+  Ink.main = { show, openSettings, get view() { return view; } };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+/* ============ INKSHELF · sync.js ============
+   Optional Supabase cross-device sync. If supabase-js can't load
+   (offline, sandbox, blocked CDN) the app stays local-only, silently.
+   Server setup: run schema.sql once in the Supabase SQL editor. */
+(function () {
+  const CONFIG = { SUPABASE_URL: "https://dqrbdwahwetzramtyznw.supabase.co", SUPABASE_KEY: "sb_publishable_odBpCQOBmT1YY3j8o903ZA_kTPtUQW2" };
+  const Ink = (window.Ink = window.Ink || {});
+  const QKEY = "inkshelf.sync.queue";
+  const BKEY = "inkshelf.sync.bannerOff";
+  const $ = (s) => document.querySelector(s);
+
+  /* localStorage with try/catch and an in-memory fallback */
+  const mem = {};
+  const safeStorage = {
+    getItem(k) { try { const v = window.localStorage.getItem(k); return v == null ? (k in mem ? mem[k] : null) : v; } catch (e) { return k in mem ? mem[k] : null; } },
+    setItem(k, v) { mem[k] = String(v); try { window.localStorage.setItem(k, String(v)); } catch (e) {} },
+    removeItem(k) { delete mem[k]; try { window.localStorage.removeItem(k); } catch (e) {} },
+  };
+  const readJSON = (k, d) => { try { return JSON.parse(safeStorage.getItem(k)) || d; } catch (e) { return d; } };
+
+  let client = null, session = null, channel = null, uid = null;
+  let status = "local"; // local | syncing | synced | offline | error
+  let queue = readJSON(QKEY, {}); // item_key -> { op: "upsert" | "delete", t } ; deletes are tombstones
+  let syncedKeys = new Set(); // keys known to exist on the server for this user
+  const idMap = {}; // row id -> item_key, for realtime deletes
+  let known = new Set(Ink.store.getAll().map((i) => i.item_key));
+  let flushing = false, again = false, lastPull = 0, flushTimer = null;
+  const hashError = /error_description=([^&]+)/.exec(location.hash);
+
+  const saveQueue = () => safeStorage.setItem(QKEY, JSON.stringify(queue));
+  const sKey = () => "inkshelf.sync.keys." + uid;
+  const saveSynced = () => uid && safeStorage.setItem(sKey(), JSON.stringify([...syncedKeys]));
+  const pending = () => Object.keys(queue).length;
+
+  /* ---------- row mapping ---------- */
+  function toRow(it) {
+    const p = it.progress || {};
+    return {
+      user_id: uid, item_key: it.item_key, kind: it.kind, status: it.status,
+      progress: p.unit === "volume" ? p.volume || 0 : p.chapter || 0,
+      data: Object.assign({}, it.data, { _ink: { progress: p, added_at: it.added_at } }),
+      updated_at: new Date(it.updated_at || Date.now()).toISOString(),
+    };
+  }
+  function fromRow(r) {
+    const data = Object.assign({}, r.data);
+    const meta = data._ink || {};
+    delete data._ink;
+    return {
+      item_key: r.item_key, kind: r.kind, status: r.status, data, keepTime: true,
+      progress: meta.progress || { chapter: Number(r.progress) || 0 },
+      added_at: meta.added_at, updated_at: Date.parse(r.updated_at) || Date.now(),
+    };
+  }
+
+  /* Apply one server row locally, last write wins, never re-pushed. */
+  function applyRow(r) {
+    if (r.id) idMap[r.id] = r.item_key;
+    syncedKeys.add(r.item_key);
+    const rt = Date.parse(r.updated_at) || 0;
+    const q = queue[r.item_key];
+    const local = Ink.store.get(r.item_key);
+    if (q && q.t >= rt) return; // our pending change is newer
+    if (local && (local.updated_at || 0) >= rt) return;
+    if (q) delete queue[r.item_key];
+    Ink.store.saveItem(fromRow(r), { source: "remote" });
+  }
+
+  /* ---------- store hook ---------- */
+  function onStore(ch) {
+    if (ch.source === "remote") return;
+    if (ch.type === "add" || ch.type === "update") queue[ch.key] = { op: "upsert", t: ch.item.updated_at };
+    else if (ch.type === "remove") queue[ch.key] = { op: "delete", t: Date.now() };
+    else if (ch.type === "import") {
+      const now = new Set(Ink.store.getAll().map((i) => i.item_key));
+      known.forEach((k) => { if (!now.has(k)) queue[k] = { op: "delete", t: Date.now() }; });
+      Ink.store.getAll().forEach((i) => { if (!queue[i.item_key]) queue[i.item_key] = { op: "upsert", t: i.updated_at }; });
+    }
+    known = new Set(Ink.store.getAll().map((i) => i.item_key));
+    if (ch.type === "external") { queue = readJSON(QKEY, queue); return; }
+    saveQueue();
+    if (ch.type === "import") return fullSync();
+    clearTimeout(flushTimer);
+    flushTimer = setTimeout(flush, 400);
+    render();
+  }
+
+  /* ---------- push ---------- */
+  async function flush() {
+    if (!client || !session) return render();
+    if (!navigator.onLine) return setStatus("offline");
+    if (flushing) { again = true; return; }
+    const entries = Object.entries(queue);
+    if (!entries.length) return setStatus("synced");
+    flushing = true;
+    setStatus("syncing");
+    let ok = true;
+    const ups = entries.filter(([k, q]) => q.op === "upsert" && Ink.store.has(k));
+    const dels = entries.filter(([, q]) => q.op === "delete");
+    entries.forEach(([k, q]) => { if (q.op === "upsert" && !Ink.store.has(k)) delete queue[k]; });
+    try {
+      if (ups.length) {
+        const { error } = await client.from("library").upsert(ups.map(([k]) => toRow(Ink.store.get(k))), { onConflict: "user_id,item_key" });
+        if (error) throw error;
+        ups.forEach(([k, q]) => { syncedKeys.add(k); if (queue[k] && queue[k].t === q.t) delete queue[k]; });
+      }
+      if (dels.length) {
+        const keys = dels.map(([k]) => k);
+        const { error } = await client.from("library").delete().eq("user_id", uid).in("item_key", keys);
+        if (error) throw error;
+        dels.forEach(([k, q]) => { syncedKeys.delete(k); if (queue[k] && queue[k].t === q.t) delete queue[k]; });
+      }
+    } catch (e) {
+      ok = false;
+      console.warn("[sync] push failed", e && e.message);
+    }
+    saveQueue();
+    saveSynced();
+    flushing = false;
+    if (again) { again = false; return flush(); }
+    setStatus(ok ? (pending() ? "syncing" : "synced") : navigator.onLine ? "error" : "offline");
+  }
+
+  /* ---------- pull + merge ---------- */
+  async function pull() {
+    if (!client || !session) return false;
+    if (!navigator.onLine) { setStatus("offline"); return false; }
+    setStatus("syncing");
+    lastPull = Date.now();
+    const { data, error } = await client.from("library").select("*").eq("user_id", uid);
+    if (error) { console.warn("[sync] pull failed", error.message); setStatus("error"); return false; }
+    const remote = new Set();
+    data.forEach((r) => {
+      remote.add(r.item_key);
+      const local = Ink.store.get(r.item_key);
+      const rt = Date.parse(r.updated_at) || 0;
+      const q = queue[r.item_key];
+      if (q && q.t >= rt) return; // pending local change or tombstone wins
+      if (local && (local.updated_at || 0) > rt) { queue[r.item_key] = { op: "upsert", t: local.updated_at }; idMap[r.id] = r.item_key; return; }
+      applyRow(r);
+    });
+    Ink.store.getAll().forEach((it) => {
+      if (remote.has(it.item_key) || queue[it.item_key]) return;
+      if (syncedKeys.has(it.item_key)) Ink.store.removeItem(it.item_key, { source: "remote" }); // deleted on another device
+      else queue[it.item_key] = { op: "upsert", t: it.updated_at }; // first-time migration
+    });
+    syncedKeys = remote;
+    known = new Set(Ink.store.getAll().map((i) => i.item_key));
+    saveQueue();
+    saveSynced();
+    return true;
+  }
+
+  async function fullSync() {
+    if (await pull()) await flush();
+  }
+  function maybePull() {
+    if (session && Date.now() - lastPull > 30000) fullSync();
+  }
+
+  /* ---------- realtime ---------- */
+  function subscribe() {
+    unsubscribe();
+    channel = client
+      .channel("library")
+      .on("postgres_changes", { event: "*", schema: "public", table: "library", filter: "user_id=eq." + uid }, (p) => {
+        if (p.eventType === "DELETE") {
+          const key = (p.old && (p.old.item_key || idMap[p.old.id])) || null;
+          if (!key) return;
+          syncedKeys.delete(key);
+          if (p.old.id) delete idMap[p.old.id];
+          if (!queue[key] || queue[key].op === "delete") {
+            delete queue[key];
+            Ink.store.removeItem(key, { source: "remote" });
+          }
+        } else if (p.new) applyRow(p.new);
+        saveQueue();
+        saveSynced();
+        render();
+      })
+      .subscribe();
+  }
+  function unsubscribe() {
+    if (channel && client) client.removeChannel(channel);
+    channel = null;
+  }
+
+  /* ---------- auth ---------- */
+  function cleanUrl() {
+    if (/access_token=|refresh_token=|error_description=|type=magiclink/.test(location.hash))
+      history.replaceState(null, "", location.pathname + location.search);
+  }
+  function onAuth(event, s) {
+    cleanUrl();
+    if (s && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+      const fresh = !session || session.user.id !== s.user.id;
+      session = s;
+      if (!fresh) return render();
+      uid = s.user.id;
+      syncedKeys = new Set(readJSON(sKey(), []));
+      subscribe();
+      if (event === "SIGNED_IN" && Ink.ui) Ink.ui.toast("Signed in as " + (s.user.email || "you"));
+      fullSync();
+    } else if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+      if (s) session = s;
+    } else if (!s) {
+      unsubscribe();
+      session = null;
+      uid = null;
+      setStatus("local");
+    }
+  }
+
+  async function boot() {
+    try {
+      const mod = await import("https://esm.sh/@supabase/supabase-js@2");
+      client = mod.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, {
+        auth: { flowType: "implicit", persistSession: true, detectSessionInUrl: true, storage: safeStorage },
+      });
+      client.auth.onAuthStateChange((e, s) => setTimeout(() => onAuth(e, s), 0));
+    } catch (e) {
+      client = null; // offline or sandboxed: local-only
+    }
+    if (hashError && Ink.ui) Ink.ui.toast("That sign-in link didn't work: " + decodeURIComponent(hashError[1].replace(/\+/g, " ")), { timeout: 7000 });
+    render();
+  }
+
+  window.addEventListener("online", () => fullSync());
+  window.addEventListener("offline", () => session && setStatus("offline"));
+  document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && maybePull());
+  window.addEventListener("focus", maybePull);
+
+  /* ---------- UI ---------- */
+  const LABEL = { local: "Local only", syncing: "Syncing…", synced: "Synced", offline: "Offline", error: "Sync error" };
+  function setStatus(s) {
+    status = session ? s : "local";
+    render();
+  }
+
+  function sectionHTML() {
+    const esc = Ink.ui.esc;
+    if (!client) return `<p class="x-desc" style="margin:0">Sync isn't available right now — you may be offline. Your shelf stays saved in this browser.</p>`;
+    if (!session)
+      return `<p class="x-desc" style="margin:0">Sign in with a one-time email link to keep your shelf in step on every device.</p>
+      <form class="x-syncform" data-sync="form" novalidate>
+        <input class="x-input x-input--plain" id="sync-email" aria-label="Email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        <button class="x-btn is-primary" type="submit">Email me a link</button>
+      </form>
+      <p class="x-desc" data-sync="msg" role="status" style="margin:0"></p>`;
+    const n = pending();
+    return `<dl class="x-dl">
+        <div><dt>Signed in</dt><dd class="x-syncmail">${esc(session.user.email || "Account")}</dd></div>
+        <div><dt>Status</dt><dd><i class="x-pill__dot" data-s="${status}"></i> ${LABEL[status]}</dd></div>
+        <div><dt>Waiting</dt><dd>${n} change${n === 1 ? "" : "s"}</dd></div>
+      </dl>
+      <div class="x-btns"><button class="x-btn is-primary" type="button" data-sync="now">Sync now</button><button class="x-btn is-ghost" type="button" data-sync="out">Sign out</button></div>`;
+  }
+
+  function bind(root) {
+    const form = root.querySelector('[data-sync="form"]');
+    if (form)
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const input = form.querySelector("input");
+        const msg = root.querySelector('[data-sync="msg"]');
+        const email = input.value.trim();
+        if (!/^\S+@\S+\.\S+$/.test(email)) { msg.textContent = "Enter a valid email address."; input.focus(); return; }
+        const btn = form.querySelector("button");
+        btn.disabled = true;
+        msg.textContent = "Sending…";
+        try {
+          const { error } = await client.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
+          msg.textContent = error ? error.message : "Check your email and open the link on this device.";
+        } catch (err) {
+          msg.textContent = "Couldn't reach the server. Try again when you're online.";
+        }
+        btn.disabled = false;
+      });
+    const now = root.querySelector('[data-sync="now"]');
+    if (now) now.addEventListener("click", () => fullSync());
+    const out = root.querySelector('[data-sync="out"]');
+    if (out)
+      out.addEventListener("click", async () => {
+        try { await client.auth.signOut(); } catch (e) {}
+        onAuth("SIGNED_OUT", null);
+        Ink.ui.toast("Signed out — your shelf stays on this device");
+      });
+  }
+
+  function openSheet() {
+    Ink.ui.openSheet(
+      `<div class="x-sheet__in">
+      <div style="display:flex;align-items:center;gap:10px"><h2 id="sheet-title" style="flex:1">Account &amp; sync</h2><button class="x-iconbtn" data-close aria-label="Close">✕</button></div>
+      <div class="x-syncsec" id="sync-sec">${sectionHTML()}</div></div>`,
+      (sheet) => bind(sheet)
+    );
+  }
+
+  function render() {
+    const pill = $("#acct-pill");
+    if (pill) {
+      pill.querySelector(".x-pill__dot").dataset.s = status;
+      pill.querySelector(".x-pill__e").textContent = session ? session.user.email || "Account" : "";
+      pill.querySelector(".x-pill__s").textContent = LABEL[status];
+      pill.setAttribute("aria-label", "Account: " + (session ? (session.user.email || "") + ", " : "") + LABEL[status]);
+    }
+    const banner = $("#sync-banner");
+    if (banner) banner.hidden = !client || !!session || safeStorage.getItem(BKEY) === "1";
+    const sec = $("#sync-sec");
+    if (sec && !sec.contains(document.activeElement) && !sec.querySelector('[data-sync="msg"]:not(:empty)')) {
+      sec.innerHTML = sectionHTML();
+      bind(sec);
+    }
+  }
+
+  function init() {
+    $("#acct-pill").addEventListener("click", openSheet);
+    $("#sync-banner-go").addEventListener("click", openSheet);
+    $("#sync-banner-x").addEventListener("click", () => { safeStorage.setItem(BKEY, "1"); render(); });
+    Ink.store.onChange(onStore);
+    render();
+    boot();
+  }
+
+  Ink.sync = { sectionHTML: () => `<div class="x-syncsec" id="sync-sec">${sectionHTML()}</div>`, bind, open: openSheet, flush, fullSync, get status() { return status; } };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+    </script>
+  </body>
+</html>
