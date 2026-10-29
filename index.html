@@ -278,6 +278,17 @@
       .x-desc { font-size: 13px; color: var(--txt-2); }
       .x-desc.is-clamped { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
       .x-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+      .x-addprog { display: grid; gap: 10px; padding: 14px; border-radius: 12px; background: var(--ink-3); border: 1px solid var(--line); }
+      .x-addprog .x-step, .x-addprog .x-num { background: var(--ink-2); min-height: 40px; }
+      .x-addprog .x-step { width: 40px; height: 40px; }
+      .x-addprog .x-num input { font-size: 16px; }
+      .x-addprog__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+      .x-addprog__l { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--txt-2); }
+      .x-addprog__unit { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+      .x-addprog__unit button { padding: 5px 12px; font-size: 11px; font-weight: 700; color: var(--txt-2); background: none; border: 0; }
+      .x-addprog__unit button[aria-pressed="true"] { background: var(--txt); color: var(--ink); }
+      .x-addprog__quick { display: flex; gap: 8px; flex-wrap: wrap; }
+      .x-addprog__quick .x-chip[hidden] { display: none; }
       .x-btn {
         min-height: var(--tap); padding: 0 16px; border-radius: 11px;
         background: var(--ink-3); border: 1px solid var(--line-2); color: var(--txt);
@@ -1701,6 +1712,23 @@
       const primary = !on && s === "reading" ? " is-primary" : "";
       return `<button class="x-btn${primary}" data-add="${s}" aria-pressed="${!!on && on.status === s}">${label}</button>`;
     }).join("");
+    const limCh = totalCh(r) || latestCh(r) || 0;
+    const limVol = vols(r) || 0;
+    const progBlock = on
+      ? ""
+      : `<div class="x-addprog">
+      <div class="x-addprog__head"><span class="x-addprog__l">Where are you?</span>${
+        k === "lightnovel" && limVol
+          ? `<div class="x-addprog__unit" role="group" aria-label="Track by"><button type="button" data-unit="chapter" aria-pressed="true">Chapters</button><button type="button" data-unit="volume" aria-pressed="false">Volumes</button></div>`
+          : ""
+      }</div>
+      <div class="x-prog">
+        <button class="x-step" type="button" data-pstep="-1" aria-label="Minus one">−</button>
+        <label class="x-num" style="display:flex;align-items:center"><span class="x-sr">Current progress</span><input data-pval type="number" inputmode="numeric" min="0" value="0" /></label>
+        <button class="x-step" type="button" data-pstep="1" aria-label="Plus one">+</button>
+      </div>
+      <div class="x-addprog__quick"><button class="x-chip" type="button" data-pq="0">From the start</button><button class="x-chip" type="button" data-pq="max" hidden></button></div>
+    </div>`;
     const html = `<div class="x-sheet__banner" style="--tint:${tint}">
     ${r.cover ? `<div class="x-sheet__blur" style="background-image:${bgUrl(r.cover)}"></div>` : ""}
     ${r.banner ? `<img class="x-sheet__bannerimg" src="${esc(r.banner)}" alt="" width="720" height="150" referrerpolicy="no-referrer" data-drop />` : ""}
@@ -1716,6 +1744,7 @@
     ${r.genres && r.genres.length ? `<div class="x-tags">${r.genres.map((g) => `<span class="x-tag">${esc(g)}</span>`).join("")}</div>` : ""}
     ${desc ? `<div><p class="x-desc is-clamped" id="sheet-desc" style="white-space:pre-line;margin:0">${esc(desc)}</p><button class="x-link" data-more>More</button></div>` : ""}
     ${on ? `<p class="x-row__s" style="margin:0">On your shelf in <b style="color:var(--txt)">${Ink.library.LABEL[on.status]}</b>.</p>` : ""}
+    ${progBlock}
     <div class="x-btns">${statusBtns}</div>
     ${link ? `<p class="x-row__s" style="margin:0"><a href="${esc(link)}" target="_blank" rel="noopener">Open series page</a></p>` : ""}
   </div>`;
@@ -1728,16 +1757,64 @@
           const c = d.classList.toggle("is-clamped");
           more.textContent = c ? "More" : "Less";
         });
+      const prog = { unit: "chapter", value: 0 };
+      const box = sheet.querySelector(".x-addprog");
+      const limit = () => (prog.unit === "volume" ? limVol : limCh);
+      const sync = () => {
+        if (!box) return;
+        const lim = limit();
+        if (lim && prog.value > lim) prog.value = lim;
+        const inp = box.querySelector("[data-pval]");
+        if (document.activeElement !== inp) inp.value = prog.value;
+        if (lim) inp.max = lim;
+        else inp.removeAttribute("max");
+        const short = prog.unit === "volume" ? "Vol" : "Ch";
+        box.querySelector('[data-pstep="-1"]').disabled = prog.value <= 0;
+        box.querySelector('[data-pstep="1"]').disabled = !!lim && prog.value >= lim;
+        const max = box.querySelector('[data-pq="max"]');
+        max.hidden = !lim;
+        max.textContent = `${live ? "Caught up" : "Read it all"} · ${short} ${Ink.ui.num(lim)}`;
+        max.setAttribute("aria-pressed", String(!!lim && prog.value >= lim));
+        box.querySelector('[data-pq="0"]').setAttribute("aria-pressed", String(prog.value === 0));
+        box.querySelectorAll("[data-unit]").forEach((u) => u.setAttribute("aria-pressed", String(u.dataset.unit === prog.unit)));
+        const rd = sheet.querySelector('[data-add="reading"]');
+        if (rd) rd.textContent = prog.value > 0 ? `Reading · ${short} ${Ink.ui.num(prog.value)}` : "Start reading";
+        const done = sheet.querySelector('[data-add="completed"]');
+        const finish = !!done && !live && !!lim && prog.value >= lim;
+        if (rd) rd.classList.toggle("is-primary", !finish);
+        if (done) done.classList.toggle("is-primary", finish);
+      };
+      if (box) {
+        box.addEventListener("click", (e) => {
+          const st = e.target.closest("[data-pstep]");
+          const q = e.target.closest("[data-pq]");
+          const u = e.target.closest("[data-unit]");
+          if (st) prog.value = Math.max(0, prog.value + Number(st.dataset.pstep));
+          else if (q) prog.value = q.dataset.pq === "max" ? limit() : 0;
+          else if (u && u.dataset.unit !== prog.unit) {
+            prog.unit = u.dataset.unit;
+            prog.value = 0;
+          } else return;
+          sync();
+        });
+        const inp = box.querySelector("[data-pval]");
+        inp.addEventListener("input", () => {
+          prog.value = Math.max(0, Math.floor(Number(inp.value) || 0));
+          sync();
+        });
+        inp.addEventListener("blur", sync);
+        sync();
+      }
       sheet.querySelectorAll("[data-add]").forEach((b) =>
         b.addEventListener("click", () => {
-          add(r, b.dataset.add, k);
+          add(r, b.dataset.add, k, box ? prog : null);
           Ink.ui.closeSheet();
         })
       );
     });
   }
 
-  function add(r, status, k) {
+  function add(r, status, k, prog) {
     const cur = onShelf(r);
     if (cur) {
       if (r.origin && !cur.data.origin) Ink.store.saveItem({ item_key: cur.item_key, data: { origin: r.origin }, updated_at: cur.updated_at, keepTime: true });
@@ -1747,7 +1824,10 @@
       return;
     }
     const total = totalCh(r) || latestCh(r) || 0;
-    const progress = status === "completed" ? { chapter: total, volume: vols(r) || 0 } : {};
+    let progress = {};
+    if (status === "completed") progress = { chapter: total, volume: vols(r) || 0, unit: prog ? prog.unit : "chapter" };
+    else if (prog && prog.value > 0) progress = prog.unit === "volume" ? { volume: prog.value, unit: "volume" } : { chapter: prog.value, unit: "chapter" };
+    else if (prog) progress = { unit: prog.unit };
     // Search rows are already full details, so the item is complete as saved.
     Ink.store.saveItem({ item_key: r.item_key, kind: k, status, progress, data: Ink.api.toData(r) });
     Ink.ui.toast(`Added “${r.title}” to ${Ink.library.LABEL[status]}`, {
