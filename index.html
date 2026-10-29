@@ -410,22 +410,66 @@
       }
       /* stats view */
       .x-stats { display: grid; gap: 14px; }
-      @media (min-width: 900px) { .x-stats { grid-template-columns: 1fr 1fr; align-items: start; } }
-      .x-stat { padding: 16px; border-top: 2px solid var(--acc); }
-      .x-stat__head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
-      .x-stat__head h3 { flex: 1; font-size: 26px; color: var(--acc); }
-      .x-stat__n { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--txt-2); }
-      .x-stack { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: #6b7280; }
-      .x-stack i { display: block; height: 100%; transition: width 320ms var(--ease); }
-      .x-stat__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; margin-top: 12px; }
-      @media (max-width: 519px) { .x-stat__cols { grid-template-columns: 1fr; } }
-      .x-stat__cols dl { margin: 0; }
-      .x-stat__row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
-      .x-stat__row:last-child { border-bottom: 0; }
-      @media (max-width: 519px) { .x-stat__cols dl:first-child .x-stat__row:last-child { border-bottom: 1px solid var(--line); } }
-      .x-stat__row dt { flex: 1; display: flex; align-items: center; gap: 8px; color: var(--txt-2); }
-      .x-stat__row dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--txt); }
-      .x-stat__dot { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+      .x-stats__pair { display: grid; gap: 14px; }
+      .x-stats > *, .x-stats__pair > *, .x-sx-hero > * { min-width: 0; }
+      @media (min-width: 900px) { .x-stats__pair { grid-template-columns: 1fr 1fr; } }
+      .x-sx-hero { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      @media (min-width: 900px) { .x-sx-hero { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+      .x-sx-tile {
+        position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 2px;
+        padding: 14px 16px 16px; border-radius: 14px; border: 1px solid var(--line);
+        background: linear-gradient(160deg, color-mix(in srgb, var(--acc) 18%, var(--ink-2)), var(--ink-2) 70%);
+      }
+      .x-sx-tile::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--acc); }
+      .x-sx-tile__l { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--txt-2); }
+      .x-sx-tile__v { font-family: "Bebas Neue", Impact, sans-serif; font-weight: 400; font-size: 46px; line-height: 1; letter-spacing: 0.02em; color: var(--txt); margin-top: 6px; font-variant-numeric: tabular-nums; }
+      .x-sx-tile__s { font-size: 12px; color: var(--txt-2); }
+      .x-stat { padding: 18px; border-top: 3px solid var(--acc); background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 9%, var(--ink-2)), var(--ink-2) 55%); }
+      .x-stat__head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+      .x-stat__head h3 { flex: 1; font-size: 28px; color: var(--acc); }
+      .x-sx-list .x-stat__head h3 { color: var(--txt); }
+      .x-stat__n { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--txt-2); }
+      .x-sx-split { display: flex; align-items: center; gap: 22px; }
+      .x-sx-ring { flex: none; width: 128px; height: 128px; border-radius: 50%; display: grid; place-items: center; }
+      .x-sx-ring > div { width: 92px; height: 92px; border-radius: 50%; background: var(--ink-2); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px var(--line); }
+      .x-sx-ring b { font-family: "Bebas Neue", Impact, sans-serif; font-weight: 400; font-size: 32px; line-height: 1; color: var(--txt); }
+      .x-sx-ring span { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--txt-2); }
+      .x-sx-legend { list-style: none; margin: 0; padding: 0; flex: 1; min-width: 0; }
+      .x-sx-legend li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+      .x-sx-legend li:last-child { border-bottom: 0; }
+      .x-sx-legend i { flex: none; width: 10px; height: 10px; border-radius: 3px; }
+      .x-sx-legend span { flex: 1; color: var(--txt-2); }
+      .x-sx-legend b { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--txt); }
+      .x-sx-legend em { font-style: normal; width: 40px; text-align: right; font-size: 12px; color: var(--txt-3); font-variant-numeric: tabular-nums; }
+      .x-sx-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 16px; }
+      .x-sx-metrics > div { background: var(--ink-3); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+      .x-sx-metrics span { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--txt-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .x-sx-metrics b { font-size: 20px; font-weight: 700; color: var(--txt); font-variant-numeric: tabular-nums; }
+      .x-sx-list { padding: 18px; }
+      .x-sx-list ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+      @media (min-width: 900px) { .x-sx-list ul { grid-template-columns: 1fr 1fr; gap: 4px 24px; } }
+      .x-sx-list li { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+      .x-sx-cov { flex: none; width: 40px; height: 60px; border-radius: 6px; overflow: hidden; background: var(--ink-3); }
+      .x-sx-cov img { width: 100%; height: 100%; object-fit: cover; }
+      .x-sx-row { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+      .x-sx-row__t { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+      .x-sx-row__t b { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--txt); }
+      .x-sx-row__t span { flex: none; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--acc); }
+      .x-sx-bar { height: 6px; border-radius: 999px; background: var(--ink-3); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+      .x-sx-bar i { display: block; height: 100%; border-radius: 999px; background: var(--acc); transition: width 320ms var(--ease); }
+      .x-sx-row__m { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--txt-2); font-variant-numeric: tabular-nums; }
+      .x-sx-pc { flex: none; width: 52px; text-align: right; font-family: "Bebas Neue", Impact, sans-serif; font-weight: 400; font-size: 26px; color: var(--txt); }
+      @media (max-width: 519px) {
+        .x-sx-split { gap: 16px; }
+        .x-sx-ring { width: 108px; height: 108px; }
+        .x-sx-ring > div { width: 78px; height: 78px; }
+        .x-sx-tile__v { font-size: 38px; }
+        .x-sx-tile { padding: 12px 12px 14px; }
+        .x-sx-metrics > div { padding: 9px 10px; }
+        .x-sx-metrics span { white-space: normal; font-size: 9px; line-height: 1.3; }
+        .x-sx-metrics b { font-size: 18px; }
+        .x-sx-legend em { width: 34px; }
+      }
       .x-stat__empty { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: 13px; color: var(--txt-2); }
       .x-stat__empty .x-link { min-height: var(--tap); padding: 0 4px; font-size: 13px; }
       @media (max-width: 619px) { #go-stats { display: none; } }
@@ -1754,8 +1798,8 @@
   };
 })();
 /* ============ INKSHELF · ui-stats.js ============
-   Stats view: one panel per kind (Manhwa, Light novels), computed
-   live from the store and re-rendered on every store change. */
+   Stats view: shelf totals, one panel per kind (Manhwa, Light novels)
+   and the series closest to finishing. Re-rendered on every store change. */
 (function () {
   const Ink = (window.Ink = window.Ink || {});
   const $ = (s) => document.querySelector(s);
@@ -1766,63 +1810,123 @@
   const PARTS = [
     { s: "reading", label: "Reading", c: "#3fb950" },
     { s: "completed", label: "Completed", c: "#4c7cf3" },
-    { s: "plan", label: "Plan to read", c: "#6b7280" },
+    { s: "plan", label: "Plan to read", c: "#8b8b96" },
   ];
 
-  function figures(kind) {
-    const list = Ink.store.getAll().filter((it) => it.kind === kind);
+  const chOf = (it) => Number((it.progress || {}).chapter) || 0;
+  const latestOf = (it) => {
+    const d = it.data || {};
+    return Number(d.totalChapters || d.chapters || d.latestChapter || d.lastChapter) || 0;
+  };
+  const waitingOf = (it) => {
+    const d = it.data || {};
+    const latest = Number(d.latestChapter || d.lastChapter) || 0;
+    return it.kind === "manhwa" && it.status === "reading" ? Math.max(0, latest - chOf(it)) : 0;
+  };
+  const pctOf = (it) => {
+    if (it.status === "completed") return 100;
+    const t = latestOf(it);
+    return t ? Math.min(100, Math.round((chOf(it) / t) * 100)) : 0;
+  };
+
+  function figures(list) {
     const by = { reading: 0, completed: 0, plan: 0 };
     let chapters = 0;
     let volumes = 0;
     let waiting = 0;
     list.forEach((it) => {
-      const p = it.progress || {};
-      const ch = Number(p.chapter) || 0;
       if (by[it.status] != null) by[it.status]++;
-      // Light novels tracked by volume add their chapter progress only when one is stored.
-      chapters += ch;
-      if (kind === "lightnovel") volumes += Number(p.volume) || 0;
-      if (kind === "manhwa" && it.status === "reading") {
-        const d = it.data || {};
-        const latest = Number(d.latestChapter || d.lastChapter) || 0;
-        waiting += Math.max(0, latest - ch);
-      }
+      chapters += chOf(it);
+      volumes += Number((it.progress || {}).volume) || 0;
+      waiting += waitingOf(it);
     });
-    return { total: list.length, by, chapters, volumes, waiting };
+    const reading = list.filter((it) => it.status === "reading" && latestOf(it));
+    const avg = reading.length ? Math.round(reading.reduce((a, it) => a + pctOf(it), 0) / reading.length) : 0;
+    return { total: list.length, by, chapters, volumes, waiting, avg, hasReading: reading.length > 0 };
   }
 
-  const row = (label, value, dot) =>
-    `<div class="x-stat__row"><dt>${dot ? `<i class="x-stat__dot" style="background:${dot}"></i>` : ""}${label}</dt><dd>${Ink.ui.num(value)}</dd></div>`;
+  const tile = (label, value, sub, acc) =>
+    `<div class="x-sx-tile" style="--acc:${acc}"><span class="x-sx-tile__l">${label}</span><b class="x-sx-tile__v">${value}</b><span class="x-sx-tile__s">${sub}</span></div>`;
 
-  function panel(cfg) {
+  function hero(all) {
     const n = Ink.ui.num;
-    const f = figures(cfg.kind);
+    const f = figures(all);
+    const done = f.total ? Math.round((f.by.completed / f.total) * 100) : 0;
+    return `<div class="x-sx-hero">
+  ${tile("On your shelf", n(f.total), `${n(f.by.reading)} reading now`, "var(--red)")}
+  ${tile("Chapters read", n(f.chapters), f.volumes ? `${n(f.volumes)} volumes too` : "across every series", "var(--cyan-ink)")}
+  ${tile("Completed", n(f.by.completed), `${done}% of your shelf`, "#4c7cf3")}
+  ${tile("New chapters", n(f.waiting), f.waiting ? "waiting in Reading" : "you're all caught up", "var(--amber-ink)")}
+</div>`;
+  }
+
+  function donut(f) {
+    let at = 0;
+    const segs = PARTS.filter((p) => f.by[p.s])
+      .map((p) => {
+        const from = at;
+        at += (f.by[p.s] / f.total) * 360;
+        return `${p.c} ${from.toFixed(2)}deg ${at.toFixed(2)}deg`;
+      })
+      .join(", ");
+    const done = Math.round((f.by.completed / f.total) * 100);
+    const said = PARTS.map((p) => `${f.by[p.s]} ${p.label.toLowerCase()}`).join(", ");
+    return `<div class="x-sx-ring" role="img" aria-label="${said}" style="background:conic-gradient(${segs})"><div><b>${done}%</b><span>done</span></div></div>`;
+  }
+
+  function panel(cfg, all) {
+    const n = Ink.ui.num;
+    const list = all.filter((it) => it.kind === cfg.kind);
+    const f = figures(list);
     const id = "stat-" + cfg.kind;
     const head = `<div class="x-stat__head"><h3 id="${id}">${cfg.title}</h3><span class="x-stat__n">${n(f.total)} series</span></div>`;
     if (!f.total)
       return `<section class="x-panel x-stat" style="--acc:${cfg.acc}" aria-labelledby="${id}">${head}
-  <div class="x-stack" role="img" aria-label="No series yet"></div>
-  <p class="x-stat__empty">Nothing here yet. <button class="x-link" type="button" data-find="${cfg.kind}">Search</button></p>
+  <p class="x-stat__empty">Nothing here yet. <button class="x-link" type="button" data-find="${cfg.kind}">Find one</button></p>
 </section>`;
-    const bar = PARTS.filter((p) => f.by[p.s])
-      .map((p) => `<i style="width:${((f.by[p.s] / f.total) * 100).toFixed(3)}%;background:${p.c}"></i>`)
-      .join("");
-    const said = PARTS.map((p) => `${n(f.by[p.s])} ${p.label.toLowerCase()}`).join(", ");
-    const keys = [["Chapters read", f.chapters]];
-    if (cfg.kind === "lightnovel") keys.push(["Volumes read", f.volumes]);
-    if (cfg.kind === "manhwa" && f.waiting > 0) keys.push(["New chapters waiting", f.waiting]);
+    const legend = PARTS.map((p) => {
+      const pc = Math.round((f.by[p.s] / f.total) * 100);
+      return `<li><i style="background:${p.c}"></i><span>${p.label}</span><b>${n(f.by[p.s])}</b><em>${pc}%</em></li>`;
+    }).join("");
+    const metrics = [["Chapters read", n(f.chapters)]];
+    if (cfg.kind === "lightnovel") metrics.push(["Volumes read", n(f.volumes)]);
+    else metrics.push(["New chapters", n(f.waiting)]);
+    metrics.push(["Avg progress", f.hasReading ? `${f.avg}%` : "None"]);
     return `<section class="x-panel x-stat" style="--acc:${cfg.acc}" aria-labelledby="${id}">${head}
-  <div class="x-stack" role="img" aria-label="${said}">${bar}</div>
-  <div class="x-stat__cols">
-    <dl>${PARTS.map((p) => row(p.label, f.by[p.s], p.c)).join("")}</dl>
-    <dl>${keys.map(([l, v]) => row(l, v)).join("")}</dl>
-  </div>
+  <div class="x-sx-split">${donut(f)}<ul class="x-sx-legend">${legend}</ul></div>
+  <div class="x-sx-metrics">${metrics.map(([l, v]) => `<div><span>${l}</span><b>${v}</b></div>`).join("")}</div>
 </section>`;
+  }
+
+  function closest(all) {
+    const esc = Ink.ui.esc;
+    const n = Ink.ui.num;
+    const list = all
+      .filter((it) => it.status === "reading" && latestOf(it) && chOf(it) < latestOf(it))
+      .sort((a, b) => pctOf(b) - pctOf(a) || latestOf(a) - chOf(a) - (latestOf(b) - chOf(b)))
+      .slice(0, 5);
+    if (!list.length) return "";
+    const rows = list
+      .map((it) => {
+        const d = it.data || {};
+        const isLN = it.kind === "lightnovel";
+        const c = isLN ? "var(--amber-ink)" : "var(--cyan-ink)";
+        const left = Math.max(0, latestOf(it) - chOf(it));
+        return `<li style="--acc:${c}"><span class="x-sx-cov">${Ink.ui.coverImg(d.cover, d.title, d.color, 40, 60)}</span>
+  <div class="x-sx-row"><div class="x-sx-row__t"><b title="${esc(d.title)}">${esc(d.title)}</b><span>${isLN ? "LN" : "Manhwa"}</span></div>
+  <div class="x-sx-bar"><i style="width:${pctOf(it)}%"></i></div>
+  <div class="x-sx-row__m"><span>Ch ${n(chOf(it))} of ${n(latestOf(it))}</span><span>${left ? `${n(left)} to go` : "Caught up"}</span></div></div>
+  <b class="x-sx-pc">${pctOf(it)}%</b></li>`;
+      })
+      .join("");
+    return `<section class="x-panel x-sx-list" aria-labelledby="stat-close"><div class="x-stat__head"><h3 id="stat-close">Closest to finishing</h3><span class="x-stat__n">From Reading</span></div><ul>${rows}</ul></section>`;
   }
 
   function render() {
     const out = $("#stats-out");
-    if (out) out.innerHTML = PANELS.map(panel).join("");
+    if (!out) return;
+    const all = Ink.store.getAll();
+    out.innerHTML = `${hero(all)}<div class="x-stats__pair">${PANELS.map((p) => panel(p, all)).join("")}</div>${closest(all)}`;
   }
 
   Ink.stats = {
