@@ -401,6 +401,27 @@
         .x-num { min-height: var(--tap); }
         .x-mini { min-height: var(--tap); }
       }
+      /* stats view */
+      .x-stats { display: grid; gap: 14px; }
+      @media (min-width: 900px) { .x-stats { grid-template-columns: 1fr 1fr; align-items: start; } }
+      .x-stat { padding: 16px; border-top: 2px solid var(--acc); }
+      .x-stat__head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+      .x-stat__head h3 { flex: 1; font-size: 26px; color: var(--acc); }
+      .x-stat__n { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--txt-2); }
+      .x-stack { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: #6b7280; }
+      .x-stack i { display: block; height: 100%; transition: width 320ms var(--ease); }
+      .x-stat__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; margin-top: 12px; }
+      @media (max-width: 519px) { .x-stat__cols { grid-template-columns: 1fr; } }
+      .x-stat__cols dl { margin: 0; }
+      .x-stat__row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+      .x-stat__row:last-child { border-bottom: 0; }
+      @media (max-width: 519px) { .x-stat__cols dl:first-child .x-stat__row:last-child { border-bottom: 1px solid var(--line); } }
+      .x-stat__row dt { flex: 1; display: flex; align-items: center; gap: 8px; color: var(--txt-2); }
+      .x-stat__row dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--txt); }
+      .x-stat__dot { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+      .x-stat__empty { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: 13px; color: var(--txt-2); }
+      .x-stat__empty .x-link { min-height: var(--tap); padding: 0 4px; font-size: 13px; }
+      @media (max-width: 619px) { #go-stats { display: none; } }
       [hidden] { display: none !important; }
       .x-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       @media (prefers-reduced-motion: reduce) {
@@ -417,10 +438,13 @@
           <span>manhwa &amp; ln</span>
         </div>
         <div class="x-top__sp"></div>
-        <button class="x-pill" id="acct-pill" type="button" aria-label="Account: Local only">
-          <i class="x-pill__dot" data-s="local"></i><span class="x-pill__e"></span><span class="x-pill__s">Local only</span>
+        <button class="x-pill" id="acct-pill" type="button" aria-label="Sign in to keep your shelf on all your devices">
+          <i class="x-pill__dot" data-s="local"></i><span class="x-pill__e"></span><span class="x-pill__s">Sign in</span>
         </button>
-        <button class="x-iconbtn" id="go-search" aria-label="Search series" title="Search ( / )">
+        <button class="x-iconbtn" id="go-stats" aria-label="Stats" title="Stats">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20h18M6 20v-6M11 20V5M16 20v-9M20 20v-3"/></svg>
+        </button>
+        <button class="x-iconbtn" id="go-search" aria-label="Search series" title="Search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         </button>
         <button class="x-iconbtn" id="go-settings" aria-label="Settings">
@@ -430,7 +454,6 @@
     </header>
 
     <main class="x-wrap">
-      <!-- LIBRARY -->
       <section id="view-library">
         <div class="x-sechead">
           <span class="x-sechead__tag">My shelf</span>
@@ -461,12 +484,10 @@
         <div id="lib-empty"></div>
       </section>
 
-      <!-- SEARCH -->
       <section id="view-search" hidden>
         <div class="x-sechead">
           <span class="x-sechead__tag is-red">Search</span>
           <span class="x-sechead__rule"></span>
-          <span class="x-sechead__note">live search</span>
         </div>
         <div class="x-panel" style="padding: 12px">
           <div class="x-searchrow">
@@ -480,13 +501,21 @@
             </div>
           </div>
           <p style="margin: 10px 2px 0; font-size: 11px; color: var(--txt-3)">
-            Korean webtoons in Manhwa mode, novels in Light novel mode. Press <b>/</b> anywhere to jump here.
+            Manhwa mode finds Korean webtoons. Light novel mode finds novels.
           </p>
         </div>
         <div id="search-out"></div>
       </section>
 
-      <p class="x-foot">INKSHELF · saved in this browser, synced across devices when you sign in.</p>
+      <section id="view-stats" hidden>
+        <div class="x-sechead">
+          <span class="x-sechead__tag">Stats</span>
+          <span class="x-sechead__rule"></span>
+        </div>
+        <div class="x-stats" id="stats-out"></div>
+      </section>
+
+      <p class="x-foot">INKSHELF</p>
     </main>
 
     <nav class="x-bottom" aria-label="Sections">
@@ -498,6 +527,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         Search
       </button>
+      <button type="button" data-view="stats" aria-current="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20h18M6 20v-6M11 20V5M16 20v-9M20 20v-3"/></svg>
+        Stats
+      </button>
       <button type="button" data-view="settings" aria-current="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
         Settings
@@ -507,7 +540,6 @@
     <div class="x-toasts" id="toasts" aria-live="polite"></div>
     <div id="layer"></div>
 
-    <!-- app: js/store.js + js/api.js + js/ui-library.js + js/ui-search.js + js/main.js + js/sync.js, concatenated in that order -->
     <script>
 /* ============ INKSHELF · store.js ============
    The single place shelf data changes. Every write goes through
@@ -549,9 +581,7 @@
     subs.forEach((fn) => {
       try {
         fn(change);
-      } catch (e) {
-        console.error("[store] listener failed", e);
-      }
+      } catch (e) {}
     });
   }
 
@@ -627,10 +657,10 @@
     try {
       parsed = JSON.parse(text);
     } catch (e) {
-      throw new Error("That file isn't valid JSON.");
+      throw new Error("That file isn't a shelf backup.");
     }
     const list = Array.isArray(parsed) ? parsed : parsed && (Array.isArray(parsed.items) ? parsed.items : parsed.items && Object.values(parsed.items));
-    if (!Array.isArray(list)) throw new Error("No shelf items found in that file.");
+    if (!Array.isArray(list)) throw new Error("No series found in that file.");
     const valid = list.filter((it) => it && it.item_key && it.data && it.data.title);
     if (mode === "replace") {
       items = {};
@@ -1142,7 +1172,7 @@
       const now = Ink.store.get(key);
       Ink.ui.toast(`Updated “${(now || it).data.title}”`);
     } catch (e) {
-      Ink.ui.toast(e && e.message === "Not found" ? `Couldn't find “${it.data.title}”. Try the Korean or romanized title.` : "Search didn't respond. Try again later.");
+      Ink.ui.toast(e && e.message === "Not found" ? `Couldn't find “${it.data.title}”. Try the Korean or romanized title.` : "Couldn't update details. Try again later.");
     }
   }
 
@@ -1161,7 +1191,7 @@
   function openMove(btn, key) {
     const it = Ink.store.get(key);
     const opts = Ink.store.STATUSES.filter((s) => s !== it.status).map((s) => ({ label: `Move to ${LABEL[s]}`, onClick: () => move(key, s) }));
-    opts.push("hr", { label: "Refresh info", onClick: () => refresh(key) });
+    opts.push("hr", { label: "Update details", onClick: () => refresh(key) });
     opts.push("hr", { label: "Remove from shelf", onClick: () => remove(key) });
     Ink.ui.openMenu(btn, opts);
   }
@@ -1381,7 +1411,7 @@
       return;
     }
     if (res.failed) {
-      out.innerHTML = `<div class="x-note" role="alert"><span>Search didn't respond.</span><button class="x-link x-retry" data-act="retry">Retry</button></div>`;
+      out.innerHTML = `<div class="x-note" role="alert"><span>Couldn't search right now.</span><button class="x-link x-retry" data-act="retry">Retry</button></div>`;
       return;
     }
     out.innerHTML = `<div class="x-empty"><div class="x-bubble" role="status"><h3>No match</h3><p>Couldn't find “${esc(q)}”. Try the Korean or romanized title.</p></div></div>`;
@@ -1466,7 +1496,7 @@
     ${desc ? `<div><p class="x-desc is-clamped" id="sheet-desc" style="white-space:pre-line;margin:0">${esc(desc)}</p><button class="x-link" data-more>More</button></div>` : ""}
     ${on ? `<p class="x-row__s" style="margin:0">On your shelf in <b style="color:var(--txt)">${Ink.library.LABEL[on.status]}</b>.</p>` : ""}
     <div class="x-btns">${statusBtns}</div>
-    ${link ? `<p class="x-row__s" style="margin:0"><a href="${esc(link)}" target="_blank" rel="noopener">Open source page</a></p>` : ""}
+    ${link ? `<p class="x-row__s" style="margin:0"><a href="${esc(link)}" target="_blank" rel="noopener">Open series page</a></p>` : ""}
   </div>`;
 
     Ink.ui.openSheet(html, (sheet) => {
@@ -1536,12 +1566,99 @@
     },
     openDetail,
     enrich,
+    setKind,
     onShelf,
     focus() {
       const i = $("#q");
       i.focus();
       i.select();
     },
+  };
+})();
+/* ============ INKSHELF · ui-stats.js ============
+   Stats view: one panel per kind (Manhwa, Light novels), computed
+   live from the store and re-rendered on every store change. */
+(function () {
+  const Ink = (window.Ink = window.Ink || {});
+  const $ = (s) => document.querySelector(s);
+  const PANELS = [
+    { kind: "manhwa", title: "Manhwa", acc: "var(--cyan)" },
+    { kind: "lightnovel", title: "Light novels", acc: "var(--amber)" },
+  ];
+  const PARTS = [
+    { s: "reading", label: "Reading", c: "#3fb950" },
+    { s: "completed", label: "Completed", c: "#4c7cf3" },
+    { s: "plan", label: "Plan to read", c: "#6b7280" },
+  ];
+
+  function figures(kind) {
+    const list = Ink.store.getAll().filter((it) => it.kind === kind);
+    const by = { reading: 0, completed: 0, plan: 0 };
+    let chapters = 0;
+    let volumes = 0;
+    let waiting = 0;
+    list.forEach((it) => {
+      const p = it.progress || {};
+      const ch = Number(p.chapter) || 0;
+      if (by[it.status] != null) by[it.status]++;
+      // Light novels tracked by volume add their chapter progress only when one is stored.
+      chapters += ch;
+      if (kind === "lightnovel") volumes += Number(p.volume) || 0;
+      if (kind === "manhwa" && it.status === "reading") {
+        const d = it.data || {};
+        const latest = Number(d.latestChapter || d.lastChapter) || 0;
+        waiting += Math.max(0, latest - ch);
+      }
+    });
+    return { total: list.length, by, chapters, volumes, waiting };
+  }
+
+  const row = (label, value, dot) =>
+    `<div class="x-stat__row"><dt>${dot ? `<i class="x-stat__dot" style="background:${dot}"></i>` : ""}${label}</dt><dd>${Ink.ui.num(value)}</dd></div>`;
+
+  function panel(cfg) {
+    const n = Ink.ui.num;
+    const f = figures(cfg.kind);
+    const id = "stat-" + cfg.kind;
+    const head = `<div class="x-stat__head"><h3 id="${id}">${cfg.title}</h3><span class="x-stat__n">${n(f.total)} series</span></div>`;
+    if (!f.total)
+      return `<section class="x-panel x-stat" style="--acc:${cfg.acc}" aria-labelledby="${id}">${head}
+  <div class="x-stack" role="img" aria-label="No series yet"></div>
+  <p class="x-stat__empty">Nothing here yet. <button class="x-link" type="button" data-find="${cfg.kind}">Search</button></p>
+</section>`;
+    const bar = PARTS.filter((p) => f.by[p.s])
+      .map((p) => `<i style="width:${((f.by[p.s] / f.total) * 100).toFixed(3)}%;background:${p.c}"></i>`)
+      .join("");
+    const said = PARTS.map((p) => `${n(f.by[p.s])} ${p.label.toLowerCase()}`).join(", ");
+    const keys = [["Chapters read", f.chapters]];
+    if (cfg.kind === "lightnovel") keys.push(["Volumes read", f.volumes]);
+    if (cfg.kind === "manhwa" && f.waiting > 0) keys.push(["New chapters waiting", f.waiting]);
+    return `<section class="x-panel x-stat" style="--acc:${cfg.acc}" aria-labelledby="${id}">${head}
+  <div class="x-stack" role="img" aria-label="${said}">${bar}</div>
+  <div class="x-stat__cols">
+    <dl>${PARTS.map((p) => row(p.label, f.by[p.s], p.c)).join("")}</dl>
+    <dl>${keys.map(([l, v]) => row(l, v)).join("")}</dl>
+  </div>
+</section>`;
+  }
+
+  function render() {
+    const out = $("#stats-out");
+    if (out) out.innerHTML = PANELS.map(panel).join("");
+  }
+
+  Ink.stats = {
+    init() {
+      $("#stats-out").addEventListener("click", (e) => {
+        const b = e.target.closest("[data-find]");
+        if (!b) return;
+        Ink.search.setKind(b.dataset.find);
+        Ink.main.show("search");
+      });
+      Ink.store.onChange(render);
+      render();
+    },
+    render,
   };
 })();
 /* ============ INKSHELF · main.js ============
@@ -1695,6 +1812,7 @@
     view = v;
     $("#view-library").hidden = v !== "library";
     $("#view-search").hidden = v !== "search";
+    $("#view-stats").hidden = v !== "stats";
     document.querySelectorAll(".x-bottom [data-view]").forEach((b) => b.setAttribute("aria-current", String(b.dataset.view === v)));
     window.scrollTo({ top: 0 });
     if (v === "search") Ink.search.focus();
@@ -1702,29 +1820,19 @@
 
   /* ---------- settings ---------- */
   function openSettings() {
-    const c = Ink.store.counts();
-    const saved = Ink.store.isPersistent();
     Ink.ui.openSheet(
       `<div class="x-sheet__in">
     <div style="display:flex;align-items:center;gap:10px"><h2 id="sheet-title" style="flex:1">Settings</h2><button class="x-iconbtn" data-close aria-label="Close">✕</button></div>
-    <dl class="x-dl">
-      <div><dt>Series</dt><dd>${num(c.total)}</dd></div>
-      <div><dt>Reading</dt><dd>${num(c.reading)}</dd></div>
-      <div><dt>Manhwa · LN</dt><dd>${num(c.manhwa)} · ${num(c.lightnovel)}</dd></div>
-      <div><dt>Storage</dt><dd>${saved ? "This browser" : "Memory only"}</dd></div>
-    </dl>
-    ${saved ? "" : `<div class="x-note">This browser blocks local storage, so the shelf lasts only until you close the tab. Export it to keep a copy.</div>`}
     ${Ink.sync ? `<div><h3 style="font-size:22px;margin-bottom:8px">Account &amp; sync</h3>${Ink.sync.sectionHTML()}</div>` : ""}
-    <div><h3 style="font-size:22px;margin-bottom:8px">Back up</h3>
-      <p class="x-desc" style="margin:0 0 10px">Download your shelf as a JSON file.</p>
-      <div class="x-btns"><button class="x-btn is-primary" id="set-export">Export JSON</button></div></div>
+    <div><h3 style="font-size:22px;margin-bottom:8px">Backup</h3>
+      <p class="x-desc" style="margin:0 0 10px">Save a copy of your shelf to your device.</p>
+      <div class="x-btns"><button class="x-btn is-primary" id="set-export">Download backup</button></div></div>
     <div><h3 style="font-size:22px;margin-bottom:8px">Restore</h3>
-      <p class="x-desc" style="margin:0 0 10px">Merge keeps the newer copy of each series. Replace wipes the shelf first.</p>
+      <p class="x-desc" style="margin:0 0 10px">Add to shelf keeps your newest progress. Replace shelf swaps everything for the backup.</p>
       <div class="x-btns" style="align-items:center">
-        <div class="x-seg" id="set-mode" role="group" aria-label="Import mode"><button type="button" data-mode="merge" aria-pressed="true">Merge</button><button type="button" data-mode="replace" aria-pressed="false">Replace</button></div>
-        <label class="x-btn" style="display:inline-flex;align-items:center">Import JSON<input type="file" id="set-file" accept="application/json,.json" class="x-sr" /></label>
+        <div class="x-seg" id="set-mode" role="group" aria-label="Restore mode"><button type="button" data-mode="merge" aria-pressed="true">Add to shelf</button><button type="button" data-mode="replace" aria-pressed="false">Replace shelf</button></div>
+        <label class="x-btn" style="display:inline-flex;align-items:center">Restore from backup<input type="file" id="set-file" accept="application/json,.json" class="x-sr" /></label>
       </div></div>
-    <p class="x-row__s" style="margin:0">Shortcuts: <b>/</b> search · <b>Esc</b> close</p>
   </div>`,
       (sheet) => {
         if (Ink.sync) Ink.sync.bind(sheet);
@@ -1746,23 +1854,23 @@
             URL.revokeObjectURL(a.href);
             a.remove();
           }, 500);
-          toast(`Exported ${num(Ink.store.counts().total)} series`);
+          toast(`Backup saved: ${num(Ink.store.counts().total)} series`);
         });
         sheet.querySelector("#set-file").addEventListener("change", (e) => {
           const file = e.target.files && e.target.files[0];
           if (!file) return;
-          if (mode === "replace" && Ink.store.counts().total && !window.confirm("Replace your whole shelf with this file?")) return;
+          if (mode === "replace" && Ink.store.counts().total && !window.confirm("Replace your whole shelf with this backup?")) return;
           const reader = new FileReader();
           reader.onload = () => {
             try {
               const r = Ink.store.importJSON(String(reader.result), mode);
               closeSheet();
-              toast(`Imported: ${num(r.added)} new, ${num(r.updated)} updated${r.skipped ? `, ${num(r.skipped)} skipped` : ""}`);
+              toast(`Restored: ${num(r.added)} new, ${num(r.updated)} updated${r.skipped ? `, ${num(r.skipped)} unchanged` : ""}`);
             } catch (err) {
-              toast(err.message || "Import failed");
+              toast("Couldn't restore that file. Pick an Inkshelf backup.");
             }
           };
-          reader.onerror = () => toast("Couldn't read that file.");
+          reader.onerror = () => toast("Couldn't open that file. Try again.");
           reader.readAsText(file);
         });
       }
@@ -1789,11 +1897,13 @@
   function init() {
     Ink.library.init();
     Ink.search.init();
+    Ink.stats.init();
     document.querySelectorAll(".x-bottom [data-view]").forEach((b) => b.addEventListener("click", () => show(b.dataset.view)));
     $("#go-search").addEventListener("click", () => show("search"));
+    $("#go-stats").addEventListener("click", () => show("stats"));
     $("#go-settings").addEventListener("click", openSettings);
     window.addEventListener("resize", closeMenu);
-    if (!Ink.store.isPersistent()) toast("Storage is blocked here, so your shelf will last only this session.", { timeout: 7000 });
+    if (!Ink.store.isPersistent()) toast("Your shelf can't be saved on this device right now, so changes last until you close this page.", { timeout: 7000 });
   }
 
   Ink.main = { show, openSettings, get view() { return view; } };
@@ -1914,7 +2024,6 @@
       }
     } catch (e) {
       ok = false;
-      console.warn("[sync] push failed", e && e.message);
     }
     saveQueue();
     saveSynced();
@@ -1930,7 +2039,7 @@
     setStatus("syncing");
     lastPull = Date.now();
     const { data, error } = await client.from("library").select("*").eq("user_id", uid);
-    if (error) { console.warn("[sync] pull failed", error.message); setStatus("error"); return false; }
+    if (error) { setStatus("error"); return false; }
     const remote = new Set();
     data.forEach((r) => {
       remote.add(r.item_key);
@@ -2023,7 +2132,7 @@
     } catch (e) {
       client = null; // offline or sandboxed: local-only
     }
-    if (hashError && Ink.ui) Ink.ui.toast("That sign-in link didn't work: " + decodeURIComponent(hashError[1].replace(/\+/g, " ")), { timeout: 7000 });
+    if (hashError && Ink.ui) Ink.ui.toast("That sign-in link didn't work. Ask for a new one in Settings.", { timeout: 7000 });
     render();
   }
 
@@ -2033,7 +2142,8 @@
   window.addEventListener("focus", maybePull);
 
   /* ---------- UI ---------- */
-  const LABEL = { local: "Local only", syncing: "Syncing…", synced: "Synced", offline: "Offline", error: "Sync error" };
+  const LABEL = { local: "Sign in", syncing: "Syncing", synced: "Synced", offline: "Offline", error: "Not synced" };
+  const LINE = { local: "", syncing: "Syncing…", synced: "Synced", offline: "Offline, will sync when you're back", error: "Couldn't sync. Will try again." };
   function setStatus(s) {
     status = session ? s : "local";
     render();
@@ -2041,21 +2151,17 @@
 
   function sectionHTML() {
     const esc = Ink.ui.esc;
-    if (!client) return `<p class="x-desc" style="margin:0">Sync isn't available right now. You may be offline. Your shelf stays saved in this browser.</p>`;
+    if (!client) return `<p class="x-desc" style="margin:0">Sign in isn't available right now. Your shelf is still saved on this device.</p>`;
     if (!session)
-      return `<p class="x-desc" style="margin:0">Sign in with a one-time email link to keep your shelf in step on every device.</p>
+      return `<p class="x-desc" style="margin:0">Sign in with your email to keep your shelf on all your devices.</p>
       <form class="x-syncform" data-sync="form" novalidate>
         <input class="x-input x-input--plain" id="sync-email" aria-label="Email" type="email" autocomplete="email" placeholder="you@example.com" required />
         <button class="x-btn is-primary" type="submit">Email me a link</button>
       </form>
       <p class="x-desc" data-sync="msg" role="status" style="margin:0"></p>`;
-    const n = pending();
-    return `<dl class="x-dl">
-        <div><dt>Signed in</dt><dd class="x-syncmail">${esc(session.user.email || "Account")}</dd></div>
-        <div><dt>Status</dt><dd><i class="x-pill__dot" data-s="${status}"></i> ${LABEL[status]}</dd></div>
-        <div><dt>Waiting</dt><dd>${n} change${n === 1 ? "" : "s"}</dd></div>
-      </dl>
-      <div class="x-btns"><button class="x-btn is-primary" type="button" data-sync="now">Sync now</button><button class="x-btn is-ghost" type="button" data-sync="out">Sign out</button></div>`;
+    return `<p class="x-desc x-syncmail" style="margin:0">Signed in as <b style="color:var(--txt)">${esc(session.user.email || "your account")}</b></p>
+      <p class="x-desc" role="status" style="margin:0;display:flex;align-items:center;gap:8px"><i class="x-pill__dot" data-s="${status}"></i>${LINE[status] || "Synced"}</p>
+      <div class="x-btns"><button class="x-btn is-ghost" type="button" data-sync="out">Sign out</button></div>`;
   }
 
   function bind(root) {
@@ -2072,14 +2178,12 @@
         msg.textContent = "Sending…";
         try {
           const { error } = await client.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
-          msg.textContent = error ? error.message : "Check your email and open the link on this device.";
+          msg.textContent = error ? "Couldn't send the link. Wait a minute and try again." : "Check your email and open the link on this device.";
         } catch (err) {
-          msg.textContent = "Couldn't reach the server. Try again when you're online.";
+          msg.textContent = "Couldn't send the link. Check your connection and try again.";
         }
         btn.disabled = false;
       });
-    const now = root.querySelector('[data-sync="now"]');
-    if (now) now.addEventListener("click", () => fullSync());
     const out = root.querySelector('[data-sync="out"]');
     if (out)
       out.addEventListener("click", async () => {
@@ -2102,9 +2206,12 @@
     const pill = $("#acct-pill");
     if (pill) {
       pill.querySelector(".x-pill__dot").dataset.s = status;
-      pill.querySelector(".x-pill__e").textContent = session ? session.user.email || "Account" : "";
+      pill.querySelector(".x-pill__e").textContent = "";
       pill.querySelector(".x-pill__s").textContent = LABEL[status];
-      pill.setAttribute("aria-label", "Account: " + (session ? (session.user.email || "") + ", " : "") + LABEL[status]);
+      pill.setAttribute(
+        "aria-label",
+        session ? "Account, signed in as " + (session.user.email || "you") + ". " + (LINE[status] || "Synced") : "Sign in to keep your shelf on all your devices"
+      );
     }
     const banner = $("#sync-banner");
     if (banner) banner.hidden = !client || !!session || safeStorage.getItem(BKEY) === "1";
