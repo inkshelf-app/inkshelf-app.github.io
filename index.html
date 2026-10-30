@@ -1258,7 +1258,7 @@
     <div class="x-card__title" title="${esc(d.title)}">${esc(d.title)}</div>
     <div class="x-card__meta"><span>${esc(meta)}</span>${isLN ? `<button class="x-unit" data-act="unit" aria-label="Track by ${unit === "volume" ? "chapter" : "volume"}">by ${unit}</button>` : ""}</div>
     ${total ? `<div class="x-bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>` : ""}
-    ${canGo || it.link ? `<div class="x-controw">${canGo ? `<button class="x-continue" data-act="inc" aria-label="${it.status === "plan" ? "Start" : "Continue"}: mark ${unit} ${n(v + 1)} read">${it.status === "plan" ? "Start" : "Continue"} · ${short} ${n(v + 1)}</button>` : ""}${it.link ? `<button class="x-mini is-read" data-act="read" aria-label="Read ${esc(d.title)}, ${short} ${n(Math.max(1, v + (canGo ? 1 : 0)))}" title="Open your reading link"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg><span class="x-read-t">Read</span></button>` : ""}</div>` : ""}
+    ${canGo ? `<div class="x-controw">${canGo ? `<button class="x-continue" data-act="inc" aria-label="${it.status === "plan" ? "Start" : "Continue"}: mark ${unit} ${n(v + 1)} read">${it.status === "plan" ? "Start" : "Continue"} · ${short} ${n(v + 1)}</button>` : ""}</div>` : ""}
     <div class="x-prog">
       <button class="x-step" data-act="dec" aria-label="Minus one ${unit}"${v <= 0 ? " disabled" : ""}>−</button>
       <label class="x-num" style="display:flex;align-items:center"><span class="x-sr">Current ${unit}${limit ? `, up to ${n(limit)}` : ""}</span><input data-act="set" type="number" inputmode="numeric" min="0"${limit ? ` max="${limit}"` : ""} value="${v}" /></label>
@@ -1586,7 +1586,6 @@
       else if (act === "unit") Ink.store.saveItem({ item_key: key, progress: { unit: unitOf(it) === "volume" ? "chapter" : "volume" } });
       else if (act === "move") openMove(b, key);
       else if (act === "remove") remove(key);
-      else if (act === "read") window.open(readUrl(it), "_blank", "noopener");
       else if (act === "open") Ink.search.openDetail(Object.assign({}, it.data, { item_key: key, kind: it.kind }));
     });
     grid.addEventListener("change", (e) => {
@@ -1913,8 +1912,6 @@
     <div class="x-btns">${statusBtns}</div>
     ${on ? `<div class="x-mine">
       <label class="x-mine__f"><span>Your note</span><textarea data-note rows="2" maxlength="1000" placeholder="Where you left off, what you think, why you paused">${esc(on.note || "")}</textarea></label>
-      <label class="x-mine__f"><span>Where you read it</span><input data-rlink type="url" inputmode="url" placeholder="Paste a chapter link from the site you read on" value="${esc(on.link || "")}" /></label>
-      <p class="x-mine__hint">Paste a link to any chapter. The Read button on the card then opens your next chapter when the link has the chapter number in it.</p>
     </div>` : ""}
     ${link ? `<p class="x-row__s" style="margin:0"><a href="${esc(link)}" target="_blank" rel="noopener">Open series page</a></p>` : ""}
   </div>`;
@@ -1948,7 +1945,7 @@
             Ink.ui.toast(v ? "Saved your reading link" : "Removed your reading link");
           }
         };
-        linkEl.addEventListener("change", saveLink);
+
       }
       const prog = { unit: "chapter", value: 0 };
       const box = sheet.querySelector(".x-addprog");
